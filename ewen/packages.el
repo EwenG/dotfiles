@@ -13,7 +13,8 @@
 (defvar ewen-packages
   '(
     ;; package ewens go here
-    )
+    clojure-mode image+
+                 )
   "List of all packages to install and/or initialize. Built-in packages
 which require an initialization must be listed explicitly in the list.")
 
@@ -29,3 +30,26 @@ which require an initialization must be listed explicitly in the list.")
 ;; Often the body of an initialize function uses `use-package'
 ;; For more info on `use-package', see readme:
 ;; https://github.com/jwiegley/use-package
+
+(defun ewen/init-clojure-mode ()
+  (use-package ewen-clojure-mode
+    :commands clojure-mode))
+
+(defun ewen/init-image+ ()
+  (use-package ewen-image+
+    :commands imagex-sticky-mode
+    :init (add-hook 'image-mode-hook #'(lambda ()
+                                         (progn
+                                           (imagex-sticky-mode 1)
+                                           (define-key imagex-sticky-mode-map (kbd "L") 'imagex-sticky-zoom-in)
+                                           (define-key imagex-sticky-mode-map (kbd "H") 'imagex-sticky-zoom-out)
+                                           (define-key image-mode-map (kbd "j") 'image-next-line)
+                                           (define-key image-mode-map (kbd "k") 'image-previous-line)
+                                           (define-key image-mode-map (kbd "l") 'image-forward-hscroll)
+                                           (define-key image-mode-map (kbd "h") 'image-backward-hscroll)
+                                           (define-key image-mode-map (kbd "C-d") 'image-scroll-up)
+                                           (define-key image-mode-map (kbd "C-u") 'image-scroll-down)
+                                           (define-key image-mode-map (kbd "N") 'image-previous-file)
+                                           (evil-make-overriding-map imagex-sticky-mode-map 'normal)
+                                           (evil-make-overriding-map image-mode-map 'normal)
+                                           (evil-normalize-keymaps))))))

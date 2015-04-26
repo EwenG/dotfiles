@@ -23,7 +23,7 @@
      ;; markdown
      ;; org
      ;; syntax-checking
-     ewen git)
+     ewen git replique)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -133,6 +133,9 @@ before layers configuration."
    dotspacemacs-default-package-repository nil
    )
   ;; User initialization goes here
+  (let ((default-directory "~/.emacs.d/personal/"))
+    (normal-top-level-add-to-load-path '("."))
+    (normal-top-level-add-subdirs-to-load-path))
   )
 
 (defun dotspacemacs/config ()
