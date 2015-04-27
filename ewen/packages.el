@@ -13,7 +13,7 @@
 (defvar ewen-packages
   '(
     ;; package ewens go here
-    clojure-mode image+
+    clojure-mode image+ evil-lisp-state
                  )
   "List of all packages to install and/or initialize. Built-in packages
 which require an initialization must be listed explicitly in the list.")
@@ -53,3 +53,29 @@ which require an initialization must be listed explicitly in the list.")
                                            (evil-make-overriding-map imagex-sticky-mode-map 'normal)
                                            (evil-make-overriding-map image-mode-map 'normal)
                                            (evil-normalize-keymaps))))))
+
+(defun ewen/init-evil-lisp-state ()
+  (use-package ewen-evil-lisp-state
+    :commands evil-lisp-state
+    :config (progn
+              
+              (setq evil-lisp-state-global t)
+
+              (defconst ewen-lisp-state-commands
+                `(("l"   . sp-forward-sexp))
+                "alist of keys and commands in lisp state.")
+              
+              (dolist (x ewen-lisp-state-commands)
+                (let ((key (car x))
+                      (cmd (cdr x)))
+                  (eval
+                   `(progn
+                      (define-key evil-lisp-state-map ,(kbd key) ',cmd)
+                      (if evil-lisp-state-global
+                          (evil-leader/set-key
+                            ,(kbd (concat evil-lisp-state-leader-prefix " " key))
+                            (evil-lisp-state-enter-command ,cmd))
+                        (dolist (mm evil-lisp-state-major-modes)
+                          (evil-leader/set-key-for-mode mm
+                            ,(kbd (concat evil-lisp-state-leader-prefix " " key))
+                            (evil-lisp-state-enter-command ,cmd)))))))))))
