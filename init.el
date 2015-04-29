@@ -50,3 +50,13 @@
 
 ;;Enable inf clojure for clojure source buffers
 ;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
+
+
+
+;;Install smartparens
+(require 'package)
+(unless (package-installed-p 'smartparens)
+  (package-refresh-contents)
+  (package-install 'smartparens))
+(require 'smartparens)
+(smartparens-global-mode 1)
