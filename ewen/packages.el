@@ -32,11 +32,11 @@ which require an initialization must be listed explicitly in the list.")
 ;; https://github.com/jwiegley/use-package
 
 (defun ewen/init-clojure-mode ()
-  (use-package ewen-clojure-mode
+  (use-package clojure-mode
     :commands clojure-mode))
 
 (defun ewen/init-image+ ()
-  (use-package ewen-image+
+  (use-package image+
     :commands imagex-sticky-mode
     :init (add-hook 'image-mode-hook #'(lambda ()
                                          (progn
@@ -55,16 +55,17 @@ which require an initialization must be listed explicitly in the list.")
                                            (evil-normalize-keymaps))))))
 
 (defun ewen/init-evil-lisp-state ()
-  (use-package ewen-evil-lisp-state
-    :commands evil-lisp-state
+  (use-package evil-lisp-state
     :config (progn
-              
               (setq evil-lisp-state-global t)
 
               (defconst ewen-lisp-state-commands
-                `(("l"   . sp-forward-sexp))
+                `(("l"   . sp-forward-sexp)
+                  ("h"   . sp-backward-sexp)
+                  ("j"   . sp-next-sexp)
+                  ("k"   . sp-previous-sexp))
                 "alist of keys and commands in lisp state.")
-              
+
               (dolist (x ewen-lisp-state-commands)
                 (let ((key (car x))
                       (cmd (cdr x)))
