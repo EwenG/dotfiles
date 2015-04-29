@@ -1,3 +1,5 @@
+(setq scroll-margin 6)
+
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
   (interactive)
@@ -35,30 +37,9 @@
 
 
 
-;; Install and use sbt-mode
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(package-initialize)
-(unless (package-installed-p 'sbt-mode)
-  (package-refresh-contents) (package-install 'sbt-mode))
 
 
 
-;; Install and use ENSIME
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(package-initialize)
-
-(unless (package-installed-p 'ensime)
-  (package-refresh-contents) (package-install 'ensime))
-
-
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-
-                                        ;
-(define-key ensime-search-mode-map (kbd "RET") 'ensime-search-choose-current-result)
 
 
 ;; Install inf-clojure
@@ -69,13 +50,3 @@
 
 ;;Enable inf clojure for clojure source buffers
 ;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
-
-;; Yascroll bar : Scroll bar mode for emacs
-(require 'package)
-(unless (package-installed-p 'yascroll)
-  (package-refresh-contents)
-  (package-install 'yascroll))
-(require 'yascroll)
-
-(global-yascroll-bar-mode 1)
-(custom-set-variables '(yascroll:delay-to-hide nil))
