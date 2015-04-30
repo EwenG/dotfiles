@@ -1,5 +1,6 @@
 (setq scroll-margin 6)
 
+
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
   (interactive)
@@ -14,21 +15,9 @@
 
 
 
-;; C-c s Swap buffer
-(defun swap-buffer ()
-  (interactive)
-  (cond ((one-window-p) (display-buffer (other-buffer)))
-        ((let* ((buffer-a (current-buffer))
-                (window-b (cadr (window-list)))
-                (buffer-b (window-buffer window-b)))
-           (set-window-buffer window-b buffer-a)
-           (switch-to-buffer buffer-b)
-           (other-window 1)))))
-
-(global-set-key [remap prelude-swap-windows] 'swap-buffer)
-
-
-
+;; Isearch
+(define-key prelude-mode-map (kbd "C-c s") nil)
+(define-key search-map (kbd "C-c s") 'isearch-forward-symbol-at-point)
 
 
 ;;Ediff - split vertically by default
@@ -49,7 +38,7 @@
 ;;   (package-install 'inf-clojure))
 
 ;;Enable inf clojure for clojure source buffers
-;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
+;;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
 
 
 
@@ -60,3 +49,10 @@
   (package-install 'smartparens))
 (require 'smartparens)
 (smartparens-global-mode 1)
+
+;;Install clojure-mode
+(require 'package)
+(unless (package-installed-p 'clojure-mode)
+  (package-refresh-contents)
+  (package-install 'clojure-mode))
+(require 'clojure-mode)
