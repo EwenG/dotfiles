@@ -1,5 +1,24 @@
-(setq scroll-margin 6)
+(require 'package)
 
+;;Install dash
+(unless (package-installed-p 'dash)
+  (package-refresh-contents)
+  (package-install 'dash))
+(require 'dash)
+(eval-after-load "dash" '(dash-enable-font-lock))
+
+
+(setq scroll-margin 6)
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (setq prettify-symbols-alist
+                  (--filter (equal "lambda" it) prettify-symbols-alist))
+            (push '("-lambda" . ?λ) prettify-symbols-alist)
+            (prettify-symbols-mode 1)))
+
+(key-chord-define-global "jj" nil)
+(key-chord-define-global "jk" nil)
+(key-chord-define-global "JJ" nil)
 
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
@@ -16,8 +35,7 @@
 
 
 ;; Isearch
-(define-key prelude-mode-map (kbd "C-c s") nil)
-(define-key search-map (kbd "C-c s") 'isearch-forward-symbol-at-point)
+(define-key isearch-mode-map (kbd "C-c s") 'isearch-forward-symbol-at-point)
 
 
 ;;Ediff - split vertically by default
@@ -32,7 +50,6 @@
 
 
 ;; Install inf-clojure
-;; (require 'package)
 ;; (unless (package-installed-p 'inf-clojure)
 ;;   (package-refresh-contents)
 ;;   (package-install 'inf-clojure))
@@ -43,7 +60,6 @@
 
 
 ;;Install smartparens
-(require 'package)
 (unless (package-installed-p 'smartparens)
   (package-refresh-contents)
   (package-install 'smartparens))
@@ -51,8 +67,12 @@
 (smartparens-global-mode 1)
 
 ;;Install clojure-mode
-(require 'package)
 (unless (package-installed-p 'clojure-mode)
   (package-refresh-contents)
   (package-install 'clojure-mode))
 (require 'clojure-mode)
+
+;;Install s
+(unless (package-installed-p 's)
+  (package-refresh-contents)
+  (package-install 's))
