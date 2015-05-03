@@ -1,4 +1,5 @@
 (require 'package)
+(require 'helm-mode)
 
 ;;Install dash
 (unless (package-installed-p 'dash)
@@ -7,8 +8,10 @@
 (require 'dash)
 (eval-after-load "dash" '(dash-enable-font-lock))
 
-
+; Scroll margin
 (setq scroll-margin 6)
+
+; Prettify symbol
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
             (setq prettify-symbols-alist
@@ -16,6 +19,25 @@
             (push '("-lambda" . ?λ) prettify-symbols-alist)
             (prettify-symbols-mode 1)))
 
+; Org indent mode
+(add-hook 'org-mode-hook
+          (lambda ()
+            (org-indent-mode t)
+            (define-key smartparens-mode-map (kbd "M-<up>") nil)
+            (define-key smartparens-mode-map (kbd "M-<down>") nil)
+            (define-key prelude-mode-map (kbd "M-S-<up>") nil)
+            (define-key prelude-mode-map (kbd "M-S-<down>") nil)
+            (define-key prelude-mode-map (kbd "C-c TAB") nil)
+            (define-key prelude-mode-map (kbd "C-c o") nil))
+          t)
+
+;; Org trello
+(unless (package-installed-p 'org-trello)
+  (package-refresh-contents)
+  (package-install 'org-trello))
+(custom-set-variables '(org-trello-files '("/home/egr/Documents/test-trello.org")))
+
+; Ace jump
 (key-chord-define-global "jj" nil)
 (key-chord-define-global "jk" nil)
 (key-chord-define-global "JJ" nil)
