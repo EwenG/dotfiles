@@ -3,7 +3,7 @@
 (require 'dash)
 
 (defun ewen/find-elisp-thing-candidates ()
-  (append obarray nil))
+  (all-completions "" obarray))
 
 (defun ewen/find-elisp-thing-init ()
   (-let ((data (ewen/find-elisp-thing-candidates)))
