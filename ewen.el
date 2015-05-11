@@ -13,6 +13,20 @@
   `((name . "elisp-thing")
     (init . ewen/find-elisp-thing-init)
     (candidates . ewen/find-elisp-thing-candidates)
+    (filter-one-by-one . (lambda (candidate)
+                           (-let ((candidate-str (substring candidate 0))
+                                  (candidate-sym (intern-soft candidate obarray)))
+                             (cond ((fboundp candidate-sym)
+                                    (add-face-text-property 0 (length candidate-str)
+                                                            '(:foreground "#93E0E3")
+                                                            nil
+                                                            candidate-str))
+                                   ((boundp candidate-sym)
+                                    (add-face-text-property 0 (length candidate-str)
+                                                            '(:foreground "#DFAF8F")
+                                                            nil
+                                                            candidate-str)))
+                             candidate-str)))
     (volatile . t)))
 
 ;;;###autoload
