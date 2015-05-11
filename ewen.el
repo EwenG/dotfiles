@@ -9,6 +9,19 @@
   (-let ((data (ewen/find-elisp-thing-candidates)))
     (helm-init-candidates-in-buffer 'global data)))
 
+(defun ewen/go-to-definition (candidate)
+  (-let ((candidate-sym (intern-soft candidate obarray)))
+    (cond ((fboundp candidate-sym)
+           (find-function candidate-sym))
+          ((boundp candidate-sym)
+           (find-variable candidate-sym))
+          ((facep candidate-sym)
+           (find-face-definition candidate-sym))
+          (t (find-library candidate)))))
+
+(defvar ewen/elisp-thing-actions
+  `(("go-to-definition" ewen/go-to-definition)))
+
 (defvar ewen/source-elisp-thing
   `((name . "elisp-thing")
     (init . ewen/find-elisp-thing-init)
@@ -25,8 +38,14 @@
                                     (add-face-text-property 0 (length candidate-str)
                                                             '(:foreground "#DFAF8F")
                                                             nil
+                                                            candidate-str))
+                                   ((facep candidate-sym)
+                                    (add-face-text-property 0 (length candidate-str)
+                                                            '(:foreground "#DFAF8F")
+                                                            nil
                                                             candidate-str)))
                              candidate-str)))
+    (action . ,ewen/elisp-thing-actions)
     (volatile . t)))
 
 ;;;###autoload
