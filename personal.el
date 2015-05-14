@@ -1,6 +1,9 @@
 (require 'package)
 (require 'helm-mode)
 
+(add-to-list 'load-path "~/replique.el/")
+(require 'replique)
+
 ;;Install dash
 (unless (package-installed-p 'dash)
   (package-refresh-contents)
@@ -63,24 +66,6 @@
 ;;Ediff - split vertically by default
 (custom-set-variables '(ediff-split-window-function 'split-window-horizontally))
 
-
-
-
-
-
-
-
-
-;; Install inf-clojure
-;; (unless (package-installed-p 'inf-clojure)
-;;   (package-refresh-contents)
-;;   (package-install 'inf-clojure))
-
-;;Enable inf clojure for clojure source buffers
-;;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
-
-
-
 ;;Install smartparens
 (unless (package-installed-p 'smartparens)
   (package-refresh-contents)
@@ -94,7 +79,15 @@
   (package-install 'clojure-mode))
 (require 'clojure-mode)
 
+;;Enable replique-minor-mode
+(add-hook 'clojure-mode-hook #'replique/minor-mode)
+
 ;;Install s
 (unless (package-installed-p 's)
   (package-refresh-contents)
   (package-install 's))
+
+;;Install edn
+(unless (package-installed-p 'edn)
+  (package-refresh-contents)
+  (package-install 'edn))
