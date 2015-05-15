@@ -81,6 +81,7 @@
 
 ;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook #'replique/minor-mode)
+(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 
 ;;Install s
 (unless (package-installed-p 's)
