@@ -9,6 +9,10 @@
   (package-refresh-contents)
   (package-install 'dash))
 (require 'dash)
+(unless (package-installed-p 'dash-functional)
+  (package-refresh-contents)
+  (package-install 'dash-functional))
+(require 'dash-functional)
 (eval-after-load "dash" '(dash-enable-font-lock))
 
 ; Scroll margin
