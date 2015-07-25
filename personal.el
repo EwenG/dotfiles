@@ -35,14 +35,11 @@
             (define-key prelude-mode-map (kbd "M-S-<up>") nil)
             (define-key prelude-mode-map (kbd "M-S-<down>") nil)
             (define-key prelude-mode-map (kbd "C-c TAB") nil)
-            (define-key prelude-mode-map (kbd "C-c o") nil))
-          t)
+            (define-key prelude-mode-map (kbd "C-c o") nil)
 
-;; Org trello
-(unless (package-installed-p 'org-trello)
-  (package-refresh-contents)
-  (package-install 'org-trello))
-(custom-set-variables '(org-trello-files '("/home/egr/Documents/test-trello.org")))
+            (require 'ob-sh)
+            (setq org-confirm-babel-evaluate nil))
+          t)
 
 ; Ace jump
 (key-chord-define-global "jj" nil)
@@ -86,6 +83,7 @@
 ;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook #'replique/minor-mode)
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+(add-hook 'js2-mode-hook #'replique/generic-minor-mode)
 
 ;;Install s
 (unless (package-installed-p 's)
