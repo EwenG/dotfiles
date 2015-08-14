@@ -36,7 +36,7 @@
             (define-key prelude-mode-map (kbd "M-S-<down>") nil)
             (define-key prelude-mode-map (kbd "C-c TAB") nil)
             (define-key prelude-mode-map (kbd "C-c o") nil)
-
+            (setq visual-line-mode 1)
             (require 'ob-sh)
             (setq org-confirm-babel-evaluate nil))
           t)
@@ -94,3 +94,9 @@
 (unless (package-installed-p 'edn)
   (package-refresh-contents)
   (package-install 'edn))
+
+;;Very large files
+(unless (package-installed-p 'vlf)
+  (package-refresh-contents)
+  (package-install 'vlf))
+(require 'vlf-setup)
