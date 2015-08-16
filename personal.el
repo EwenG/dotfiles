@@ -37,8 +37,13 @@
             (define-key prelude-mode-map (kbd "C-c TAB") nil)
             (define-key prelude-mode-map (kbd "C-c o") nil)
             (setq visual-line-mode 1)
+            (require 'epresent)
             (require 'ob-sh)
-            (setq org-confirm-babel-evaluate nil))
+            (require 'ob-replique)
+            (setq org-confirm-babel-evaluate nil)
+            (push
+             '("sr" "#+RESULTS:\n:" "")
+             org-structure-template-alist))
           t)
 
 ; Ace jump
