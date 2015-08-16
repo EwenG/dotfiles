@@ -388,7 +388,7 @@ If nil then source blocks are initially hidden on slide change.")
                    (overlay-put (car epresent-overlays)
                                 'epresent-hidden-src-block t)
                    (overlay-put (car epresent-overlays)
-                                'invisiblpe 'epresent-hide))))))))
+                                'invisible 'epresent-hide))))))))
     (if arg (toggle)               ; only toggle the current src block
       (save-excursion              ; toggle all source blocks
         (goto-char (point-min))
