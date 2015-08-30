@@ -19,7 +19,7 @@
 (setq scroll-margin 6)
 
 ;; Make horizontal split the default
-(setq split-width-threshold 1)
+(setq split-width-threshold 80)
 
 ;; Prettify symbol
 (add-hook 'emacs-lisp-mode-hook
