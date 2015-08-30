@@ -253,12 +253,12 @@ If nil then source blocks are initially hidden on slide change.")
     ;; hide all comments
     (goto-char (point-min))
     (while (re-search-forward
-            "^[ \t]*#\\(\\+\\(author\\|title\\|date\\):\\)?.*\n"
+            "^[ \t]*#\\(\\+\\(author:\\|title:\\|date:\\|begin_src\\)\\)?.*\n"
             nil t)
       (cond
        ((and (match-string 2)
              (save-match-data
-               (string-match (regexp-opt '("title" "author" "date"))
+               (string-match (regexp-opt '("title:" "author:" "date:"))
                              (match-string 2)))))
        ((and (match-string 2)
              (save-match-data
@@ -270,6 +270,9 @@ If nil then source blocks are initially hidden on slide change.")
         (push (make-overlay (match-beginning 0) (1- (match-end 0)))
               epresent-overlays)
         (overlay-put (car epresent-overlays) 'invisible 'epresent-hide))
+       ;;Don't push hidden overlay on source code inside source blocks
+       ((and (save-match-data (org-in-block-p '("src")))
+             (not (match-string 2))))
        (t (push (make-overlay (match-beginning 0) (match-end 0))
                 epresent-overlays)
           (overlay-put (car epresent-overlays) 'invisible 'epresent-hide))))
