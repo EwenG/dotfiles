@@ -15,10 +15,13 @@
 (require 'dash-functional)
 (eval-after-load "dash" '(dash-enable-font-lock))
 
-; Scroll margin
+;; Scroll margin
 (setq scroll-margin 6)
 
-; Prettify symbol
+;; Make horizontal split the default
+(setq split-width-threshold 1)
+
+;; Prettify symbol
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
             (setq prettify-symbols-alist
@@ -26,7 +29,7 @@
             (push '("-lambda" . ?λ) prettify-symbols-alist)
             (prettify-symbols-mode 1)))
 
-; Org indent mode
+;; Org indent mode
 (add-hook 'org-mode-hook
           (lambda ()
             (org-indent-mode t)
@@ -36,7 +39,7 @@
             (define-key prelude-mode-map (kbd "M-S-<down>") nil)
             (define-key prelude-mode-map (kbd "C-c TAB") nil)
             (define-key prelude-mode-map (kbd "C-c o") nil)
-            (setq visual-line-mode 1)
+            ;(setq visual-line-mode 1)
             (require 'epresent)
             (require 'ob-sh)
             (require 'ob-replique)
@@ -46,7 +49,7 @@
              org-structure-template-alist))
           t)
 
-; Ace jump
+;; Ace jump
 (key-chord-define-global "jj" nil)
 (key-chord-define-global "jk" nil)
 (key-chord-define-global "JJ" nil)
