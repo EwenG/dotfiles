@@ -4,9 +4,6 @@
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
-(add-to-list 'load-path "~/replique.el/")
-(require 'replique)
-
 ;;Install dash
 (unless (package-installed-p 'dash)
   (package-refresh-contents)
@@ -107,10 +104,9 @@
   (package-refresh-contents)
   (package-install 's))
 
-;;Install edn
-(unless (package-installed-p 'edn)
-  (package-refresh-contents)
-  (package-install 'edn))
+
+(add-to-list 'load-path "~/replique.el/")
+(require 'replique)
 
 ;;Very large files
 (unless (package-installed-p 'vlf)
