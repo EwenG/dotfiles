@@ -1,6 +1,9 @@
 (require 'package)
 (require 'helm-mode)
 
+;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
+(setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
+
 (add-to-list 'load-path "~/replique.el/")
 (require 'replique)
 
@@ -15,11 +18,17 @@
 (require 'dash-functional)
 (eval-after-load "dash" '(dash-enable-font-lock))
 
+;;nix-mode
+(unless (package-installed-p 'nix-mode)
+  (package-refresh-contents)
+  (package-install 'nix-mode))
+(require 'nix-mode)
+
 ;; Scroll margin
 (setq scroll-margin 6)
 
 ;; Make horizontal split the default
-(setq split-width-threshold 80)
+(setq split-width-threshold 160)
 
 ;; Prettify symbol
 (add-hook 'emacs-lisp-mode-hook
@@ -72,7 +81,7 @@
 (define-key isearch-mode-map (kbd "C-c s") 'isearch-forward-symbol-at-point)
 
 
-;;Ediff - split vertically by default
+;;Ediff - split horizontally by default
 (custom-set-variables '(ediff-split-window-function 'split-window-horizontally))
 
 ;;Install smartparens
