@@ -4,6 +4,12 @@
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
+(add-to-list 'load-path "~/replique.el/")
+(require 'replique)
+
+(add-to-list 'load-path "~/replique2.el/")
+(require 'replique2)
+
 ;;Install dash
 (unless (package-installed-p 'dash)
   (package-refresh-contents)
@@ -55,11 +61,6 @@
              org-structure-template-alist))
           t)
 
-;; Ace jump
-(key-chord-define-global "jj" nil)
-(key-chord-define-global "jk" nil)
-(key-chord-define-global "JJ" nil)
-
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
   (interactive)
@@ -99,14 +100,14 @@
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 (add-hook 'js2-mode-hook #'replique/generic-minor-mode)
 
+;;Enable replique-minor-mode
+(add-hook 'clojure-mode-hook #'replique2/minor-mode)
+(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+
 ;;Install s
 (unless (package-installed-p 's)
   (package-refresh-contents)
   (package-install 's))
-
-
-(add-to-list 'load-path "~/replique.el/")
-(require 'replique)
 
 ;;Very large files
 (unless (package-installed-p 'vlf)
