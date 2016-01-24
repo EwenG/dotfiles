@@ -4,11 +4,8 @@
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
-(add-to-list 'load-path "~/replique.el/")
-(require 'replique)
-
 (add-to-list 'load-path "~/replique2.el/")
-(require 'replique2)
+(require 'replique)
 
 ;;Install dash
 (unless (package-installed-p 'dash)
@@ -96,13 +93,17 @@
 (require 'clojure-mode)
 
 ;;Enable replique-minor-mode
-(add-hook 'clojure-mode-hook #'replique/minor-mode)
-(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
-(add-hook 'js2-mode-hook #'replique/generic-minor-mode)
+;;(add-hook 'clojure-mode-hook #'replique/minor-mode)
+;;(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+;;(add-hook 'js2-mode-hook #'replique/generic-minor-mode)
 
 ;;Enable replique-minor-mode
-(add-hook 'clojure-mode-hook #'replique2/minor-mode)
-(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+(add-hook 'clojure-mode-hook 'replique/minor-mode)
+(add-hook 'css-mode-hook 'replique/minor-mode)
+(add-hook 'scss-mode-hook 'replique/minor-mode)
+(add-hook 'clojure-mode-hook 'smartparens-strict-mode)
+(sp-local-pair 'replique/mode "'" nil :actions nil)
+
 
 ;;Install s
 (unless (package-installed-p 's)
@@ -114,3 +115,6 @@
   (package-refresh-contents)
   (package-install 'vlf))
 (require 'vlf-setup)
+
+;; js2mode indent with 2 spaces
+(setq js2-basic-offset 2)
