@@ -1,5 +1,4 @@
 (require 'package)
-(require 'helm-mode)
 
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
@@ -48,7 +47,7 @@
             (define-key prelude-mode-map (kbd "M-S-<down>") nil)
             (define-key prelude-mode-map (kbd "C-c TAB") nil)
             (define-key prelude-mode-map (kbd "C-c o") nil)
-            ;(setq visual-line-mode 1)
+            ; (setq visual-line-mode 1)
             (require 'epresent)
             (require 'ob-sh)
             (require 'ob-replique)
@@ -118,3 +117,25 @@
 
 ;; js2mode indent with 2 spaces
 (setq js2-basic-offset 2)
+
+;; Open current directory in file explorer
+
+(defun open-in-file-explorer ()
+  "Open the current file's directory however the OS would."
+  (interactive)
+  (if default-directory
+      (browse-url-of-file (expand-file-name default-directory))
+    (error "No `default-directory' to open")))
+
+;; Ivy-mode
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq ivy-height 10)
+(setq ivy-count-format "(%d/%d) ")
+(global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "C-c C-f") 'counsel-ag)
+(define-key prelude-mode-map (kbd "M-o") nil)
+(define-key ivy-minibuffer-map (kbd "M-o") 'ivy-dispatching-done)
+(setq projectile-completion-system 'ivy)
