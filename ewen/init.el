@@ -144,6 +144,7 @@
 (global-set-key (kbd "M-s") 'sp-splice-sexp)
 (global-set-key (kbd "C-<right>") 'sp-forward-slurp-sexp)
 (global-set-key (kbd "C-<left>") 'sp-forward-barf-sexp)
+(global-set-key (kbd "C-a") 'beginning-of-line-text)
 
 (require 'ewen)
 
