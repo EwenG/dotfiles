@@ -36,6 +36,8 @@
 
 
 
+;; Indent with spaces only
+(setq-default indent-tabs-mode nil)
 
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
@@ -96,9 +98,8 @@
 	    (sp-local-pair 'replique/mode "'" nil :actions nil)
 	    (company-mode 1)))
 
-(add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (company-mode 1)))
+(add-hook 'emacs-lisp-mode-hook 'company-mode)
+(add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode)
 (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
 
 
@@ -211,4 +212,6 @@
     (package-refresh-contents)
     (package-install 'zenburn-theme))
   (load-theme 'zenburn t)
+
+  (require 'elisp-slime-nav)
   )
