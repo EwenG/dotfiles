@@ -98,9 +98,15 @@
 	    (sp-local-pair 'replique/mode "'" nil :actions nil)
 	    (company-mode 1)))
 
-(add-hook 'emacs-lisp-mode-hook 'company-mode)
-(add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode)
-(define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            ;; Handle the case when the packaes are initialized for
+            ;; the first time
+            (when (package-installed-p 'elisp-slime-nav)
+              (elisp-slime-nav-mode 1)
+              (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer))
+            (when (package-installed-p 'company)
+              (company-mode 1))))
 
 
 ;; js2mode indent with 2 spaces
@@ -142,8 +148,17 @@
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
+
 (defun ewen-after-init-hook ()
   (require 'package)
+
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  ;; Org-mode's repository
+  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+
+  (unless (package-installed-p 'elisp-slime-nav)
+    (package-refresh-contents)
+    (package-install 'elisp-slime-nav))
   
   (unless (package-installed-p 'dash)
     (package-refresh-contents)
@@ -190,13 +205,22 @@
   (unless (package-installed-p 'ivy)
     (package-refresh-contents)
     (package-install 'ivy))
-  (ivy-mode 1)
+  
+  (unless (package-installed-p 'counsel)
+    (package-refresh-contents)
+    (package-install 'counsel))
+  
+  (unless (package-installed-p 'swiper)
+    (package-refresh-contents)
+    (package-install 'swiper))
 
   ;; Swiper
+  (require 'ivy)
+  (ivy-mode 1)
   (define-key ivy-mode-map (kbd "C-c s")
-  '(lambda ()
-     (interactive)
-     (swiper (format "\\<%s\\>" (thing-at-point 'symbol)))))
+    '(lambda ()
+       (interactive)
+       (swiper (format "\\<%s\\>" (thing-at-point 'symbol)))))
 
   (require 'replique)
 
@@ -212,6 +236,4 @@
     (package-refresh-contents)
     (package-install 'zenburn-theme))
   (load-theme 'zenburn t)
-
-  (require 'elisp-slime-nav)
   )
