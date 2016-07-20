@@ -227,6 +227,9 @@
 
   ;; No toolbar
   (tool-bar-mode -1)
+  ;; No menubar
+  (menu-bar-mode -1)
+  
   ;; keyboard scroll one line at a time
   (setq scroll-step 1)
   (setq scroll-conservatively 10000)
