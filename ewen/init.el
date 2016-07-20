@@ -106,7 +106,9 @@
               (elisp-slime-nav-mode 1)
               (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer))
             (when (package-installed-p 'company)
-              (company-mode 1))))
+              (company-mode 1))
+            (when (package-installed-p 'eldoc)
+              (turn-on-eldoc-mode))))
 
 
 ;; js2mode indent with 2 spaces
