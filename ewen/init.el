@@ -44,6 +44,9 @@
 (setq mac-control-modifier 'meta)
 (setq mac-right-option-modifier nil)
 
+;; other-window in reverse
+(define-key global-map (kbd "C-x O") (lambda () (interactive) (other-window -1)))
+
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
