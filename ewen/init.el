@@ -39,10 +39,15 @@
 ;; Indent with spaces only
 (setq-default indent-tabs-mode nil)
 
+;; osx specific
+(setq mac-command-modifier 'control)
+(setq mac-control-modifier 'meta)
+(setq mac-right-option-modifier nil)
+
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
-(add-to-list 'load-path "~/replique2.el/")
+(add-to-list 'load-path "~/replique.el/")
 
 (eval-after-load "dash" '(dash-enable-font-lock))
 
@@ -110,6 +115,12 @@
             (when (package-installed-p 'eldoc)
               (turn-on-eldoc-mode))))
 
+(add-hook 'company-mode-hook
+          (lambda ()
+            (define-key company-active-map (kbd "TAB") 'company-complete-selection)
+            (define-key company-active-map (kbd "C-n") 'company-select-next)
+            (define-key company-active-map (kbd "C-p") 'company-select-previous)))
+
 
 ;; js2mode indent with 2 spaces
 (setq js2-basic-offset 2)
@@ -174,7 +185,7 @@
   (unless (package-installed-p 'projectile)
     (package-refresh-contents)
     (package-install 'projectile))
-  (projectile-mode 1)
+  (projectile-global-mode)
 
   (unless (package-installed-p 'company)
     (package-refresh-contents)
