@@ -118,6 +118,19 @@
             (when (package-installed-p 'eldoc)
               (turn-on-eldoc-mode))))
 
+(defun ewen/in-eval-expression-p ()
+  (equal this-command 'eval-expression))
+
+(add-hook 'eval-expression-minibuffer-setup-hook
+          (lambda ()
+            ;; Hook into `eval-expression`
+            (when (ewen/in-eval-expression-p)
+              (ivy-mode -1)
+              (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil))
+            ;; Use smartparens even when in the minibuffer
+            (smartparens-strict-mode 1)
+            (show-smartparens-mode 1)))
+
 (add-hook 'company-mode-hook
           (lambda ()
             (define-key company-active-map (kbd "TAB") 'company-complete-selection)
