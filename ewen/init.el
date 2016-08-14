@@ -1,5 +1,7 @@
 ;;; init.el ---   -*- lexical-binding: t; -*-
 
+(toggle-debug-on-error)
+
 ;; No startup screen
 (setq inhibit-startup-screen t)
 
@@ -44,6 +46,9 @@
 (setq mac-control-modifier 'meta)
 (setq mac-right-option-modifier nil)
 
+;; Start in fullscreen mode
+(set-frame-parameter nil 'fullscreen 'fullboth)
+
 ;; other-window in reverse
 (define-key global-map (kbd "C-x O") (lambda () (interactive) (other-window -1)))
 
@@ -84,6 +89,7 @@
 
 (global-set-key [(control down)] 'gcm-scroll-down)
 (global-set-key [(control up)] 'gcm-scroll-up)
+(global-set-key (kbd "M-_") (kbd "C-u C-_"))
 
 ;;Ediff - split horizontally by default
 (custom-set-variables
@@ -252,7 +258,7 @@
        (interactive)
        (swiper (format "\\<%s\\>" (thing-at-point 'symbol)))))
 
-  (require 'replique)
+  (require 'replique2)
 
   ;; No toolbar
   (tool-bar-mode -1)
@@ -269,4 +275,7 @@
     (package-refresh-contents)
     (package-install 'zenburn-theme))
   (load-theme 'zenburn t)
+
+  ;; (load-theme 'adwaita t)
+
   )
