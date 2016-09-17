@@ -41,13 +41,17 @@
 ;; Indent with spaces only
 (setq-default indent-tabs-mode nil)
 
+;; Disabled the alarm bell
+(setq ring-bell-function 'ignore)
+
 ;; osx specific
 (setq mac-command-modifier 'control)
 (setq mac-control-modifier 'meta)
 (setq mac-right-option-modifier nil)
 
 ;; Start in fullscreen mode
-(set-frame-parameter nil 'fullscreen 'fullboth)
+;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
+(run-at-time 0 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
 
 ;; other-window in reverse
 (define-key global-map (kbd "C-x O") (lambda () (interactive) (other-window -1)))
@@ -107,7 +111,7 @@
 	  (lambda ()
 	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
 	    (company-mode 1)))
-(add-hook 'replique/mode
+(add-hook 'replique/mode-hook
 	  (lambda ()
 	    (sp-local-pair 'replique/mode "'" nil :actions nil)
 	    (company-mode 1)))
@@ -120,9 +124,7 @@
               (elisp-slime-nav-mode 1)
               (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer))
             (when (package-installed-p 'company)
-              (company-mode 1))
-            (when (package-installed-p 'eldoc)
-              (turn-on-eldoc-mode))))
+              (company-mode 1))))
 
 (defun ewen/in-eval-expression-p ()
   (equal this-command 'eval-expression))
@@ -191,6 +193,12 @@
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
   ;; Org-mode's repository
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+
+  (if (package-installed-p 'exec-path-from-shell)
+      (exec-path-from-shell-copy-env "PATH")
+      (progn (package-refresh-contents)
+             (package-install 'exec-path-from-shell)))
+  
 
   (unless (package-installed-p 'elisp-slime-nav)
     (package-refresh-contents)
@@ -274,8 +282,8 @@
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
     (package-install 'zenburn-theme))
-  (load-theme 'zenburn t)
+  ;; (load-theme 'zenburn t)
 
-  ;; (load-theme 'adwaita t)
+  (load-theme 'adwaita t)
 
   )
