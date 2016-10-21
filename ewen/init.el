@@ -53,15 +53,13 @@
 ;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
 (run-at-time 0 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
 
-;; other-window in reverse
-(define-key global-map (kbd "C-x O") (lambda () (interactive) (other-window -1)))
+;; shift+arrow to switch window
+(windmove-default-keybindings)
 
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
 (add-to-list 'load-path "~/replique.el/")
-
-(eval-after-load "dash" '(dash-enable-font-lock))
 
 ;; Make horizontal split the default
 (setq split-width-threshold 160)
@@ -126,6 +124,10 @@
             (when (package-installed-p 'company)
               (company-mode 1))))
 
+(add-hook 'comint-mode-hook
+          (lambda ()
+            (setq comint-input-ignoredups t)))
+
 (defun ewen/in-eval-expression-p ()
   (equal this-command 'eval-expression))
 
@@ -141,6 +143,7 @@
 
 (add-hook 'company-mode-hook
           (lambda ()
+            (setq company-minimum-prefix-length 2)
             (define-key company-active-map (kbd "TAB") 'company-complete-selection)
             (define-key company-active-map (kbd "C-n") 'company-select-next)
             (define-key company-active-map (kbd "C-p") 'company-select-previous)))
@@ -204,14 +207,6 @@
     (package-refresh-contents)
     (package-install 'elisp-slime-nav))
   
-  (unless (package-installed-p 'dash)
-    (package-refresh-contents)
-    (package-install 'dash))
-  
-  (unless (package-installed-p 'dash-functional)
-    (package-refresh-contents)
-    (package-install 'dash-functional))
-
   (unless (package-installed-p 'projectile)
     (package-refresh-contents)
     (package-install 'projectile))
@@ -236,10 +231,6 @@
   (unless (package-installed-p 'clojure-mode)
     (package-refresh-contents)
     (package-install 'clojure-mode))
-
-  (unless (package-installed-p 's)
-    (package-refresh-contents)
-    (package-install 's))
 
   ;;Very large files
   (unless (package-installed-p 'vlf)
@@ -282,8 +273,8 @@
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
     (package-install 'zenburn-theme))
-  ;; (load-theme 'zenburn t)
+  (load-theme 'zenburn t)
 
-  (load-theme 'adwaita t)
+  ;; (load-theme 'adwaita t)
 
   )
