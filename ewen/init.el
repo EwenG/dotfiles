@@ -53,8 +53,8 @@
 ;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
 (run-at-time 0 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
 
-;; shift+arrow to switch window
-(windmove-default-keybindings)
+;; other-window in reverse
+(define-key global-map (kbd "C-x p") (lambda () (interactive) (other-window -1)))
 
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
