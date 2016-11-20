@@ -36,7 +36,8 @@
 
 
 
-
+;; No *scratch* message
+(setq initial-scratch-message nil)
 
 ;; Indent with spaces only
 (setq-default indent-tabs-mode nil)
@@ -91,20 +92,17 @@
 
 (global-set-key [(control down)] 'gcm-scroll-down)
 (global-set-key [(control up)] 'gcm-scroll-up)
-(global-set-key (kbd "M-_") (kbd "C-u C-_"))
 
 ;;Ediff - split horizontally by default
 (custom-set-variables
  '(ediff-split-window-function 'split-window-horizontally))
 
 ;;Enable replique-minor-mode
-;;(add-hook 'clojure-mode-hook #'replique/minor-mode)
 ;;(add-hook 'js2-mode-hook #'replique/generic-minor-mode)
 
 ;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook 'replique/minor-mode)
 (add-hook 'css-mode-hook 'replique/minor-mode)
-(add-hook 'scss-mode-hook 'replique/minor-mode)
 (add-hook 'clojure-mode-hook
 	  (lambda ()
 	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
@@ -168,6 +166,7 @@
 	    (setq ivy-height 10)
 	    (setq ivy-count-format "(%d/%d) ")))
 (global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-c C-s") 'isearch-forward-symbol-at-point)
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 (global-set-key (kbd "C-c C-f") 'counsel-ag)
@@ -252,10 +251,6 @@
   ;; Swiper
   (require 'ivy)
   (ivy-mode 1)
-  (define-key ivy-mode-map (kbd "C-c s")
-    '(lambda ()
-       (interactive)
-       (swiper (format "\\<%s\\>" (thing-at-point 'symbol)))))
 
   (require 'replique2)
 
@@ -272,9 +267,9 @@
 
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
-    (package-install 'zenburn-theme))
+  (package-install 'zenburn-theme))
   (load-theme 'zenburn t)
 
-  ;; (load-theme 'adwaita t)
+  ;;(load-theme 'adwaita t)
 
   )
