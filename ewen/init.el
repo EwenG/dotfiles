@@ -52,7 +52,7 @@
 
 ;; Start in fullscreen mode
 ;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
-(run-at-time 0 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
+(run-at-time 1 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
 
 ;; other-window in reverse
 (define-key global-map (kbd "C-x p") (lambda () (interactive) (other-window -1)))
@@ -98,11 +98,9 @@
  '(ediff-split-window-function 'split-window-horizontally))
 
 ;;Enable replique-minor-mode
-;;(add-hook 'js2-mode-hook #'replique/generic-minor-mode)
-
-;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook 'replique/minor-mode)
 (add-hook 'css-mode-hook 'replique/minor-mode)
+(add-hook 'js-mode-hook #'replique/minor-mode)
 (add-hook 'clojure-mode-hook
 	  (lambda ()
 	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
@@ -114,7 +112,7 @@
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            ;; Handle the case when the packaes are initialized for
+            ;; Handle the case when the packages are initialized for
             ;; the first time
             (when (package-installed-p 'elisp-slime-nav)
               (elisp-slime-nav-mode 1)
@@ -133,7 +131,6 @@
           (lambda ()
             ;; Hook into `eval-expression`
             (when (ewen/in-eval-expression-p)
-              (ivy-mode -1)
               (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil))
             ;; Use smartparens even when in the minibuffer
             (smartparens-strict-mode 1)
@@ -145,7 +142,6 @@
             (define-key company-active-map (kbd "TAB") 'company-complete-selection)
             (define-key company-active-map (kbd "C-n") 'company-select-next)
             (define-key company-active-map (kbd "C-p") 'company-select-previous)))
-
 
 ;; js2mode indent with 2 spaces
 (setq js2-basic-offset 2)
@@ -162,6 +158,9 @@
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
 	  (lambda ()
+            ;; Dont use ivy autocompletion when manually triggering autocompletion
+            ;; (for example in minibuffer)
+            (setq ivy-do-completion-in-region nil)
 	    (setq ivy-use-virtual-buffers t)
 	    (setq ivy-height 10)
 	    (setq ivy-count-format "(%d/%d) ")))
@@ -184,6 +183,10 @@
 (global-set-key (kbd "C-<right>") 'sp-forward-slurp-sexp)
 (global-set-key (kbd "C-<left>") 'sp-forward-barf-sexp)
 (global-set-key (kbd "C-a") 'beginning-of-line-text)
+(add-hook 'smartparens-mode-hook
+          (lambda ()
+            (define-key smartparens-strict-mode-map [remap kill-region] nil)
+            (define-key smartparens-strict-mode-map [remap delete-region] nil)))
 
 (require 'ewen)
 
@@ -252,7 +255,7 @@
   (require 'ivy)
   (ivy-mode 1)
 
-  (require 'replique2)
+  (require 'replique)
 
   ;; No toolbar
   (tool-bar-mode -1)
