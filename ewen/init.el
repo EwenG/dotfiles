@@ -100,7 +100,7 @@
 ;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook 'replique/minor-mode)
 (add-hook 'css-mode-hook 'replique/minor-mode)
-(add-hook 'js-mode-hook #'replique/minor-mode)
+(add-hook 'js-mode-hook 'replique/minor-mode)
 (add-hook 'clojure-mode-hook
 	  (lambda ()
 	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
@@ -158,9 +158,6 @@
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
 	  (lambda ()
-            ;; Dont use ivy autocompletion when manually triggering autocompletion
-            ;; (for example in minibuffer)
-            (setq ivy-do-completion-in-region nil)
 	    (setq ivy-use-virtual-buffers t)
 	    (setq ivy-height 10)
 	    (setq ivy-count-format "(%d/%d) ")))
@@ -253,6 +250,9 @@
 
   ;; Swiper
   (require 'ivy)
+  ;; Dont use ivy autocompletion when manually triggering autocompletion
+  ;; (for example in minibuffer)
+  (setq ivy-do-completion-in-region nil)
   (ivy-mode 1)
 
   (require 'replique)
