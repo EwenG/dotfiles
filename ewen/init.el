@@ -41,6 +41,8 @@
 
 ;; Indent with spaces only
 (setq-default indent-tabs-mode nil)
+(setq-default tab-width 2)
+(setq-default css-indent-offset 2)
 
 ;; Disabled the alarm bell
 (setq ring-bell-function 'ignore)
@@ -71,15 +73,14 @@
             (org-indent-mode t)
             (define-key smartparens-mode-map (kbd "M-<up>") nil)
             (define-key smartparens-mode-map (kbd "M-<down>") nil)
-            ; (setq visual-line-mode 1)
+            ;; (setq visual-line-mode 1)
             (require 'epresent)
             (require 'ob-sh)
             (require 'ob-replique)
             (setq org-confirm-babel-evaluate nil)
             (push
              '("sr" "#+RESULTS:\n:" "")
-             org-structure-template-alist))
-          t)
+             org-structure-template-alist)))
 
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
@@ -101,6 +102,22 @@
 (add-hook 'clojure-mode-hook 'replique/minor-mode)
 (add-hook 'css-mode-hook 'replique/minor-mode)
 (add-hook 'js-mode-hook 'replique/minor-mode)
+(add-hook 'stylus-mode-hook
+          (lambda ()
+            (replique/minor-mode 1)
+            (company-mode 1)))
+(add-hook 'scss-mode-hook
+          (lambda ()
+            (replique/minor-mode 1)
+            (company-mode 1)))
+(add-hook 'sass-mode-hook
+          (lambda ()
+            (replique/minor-mode 1)
+            (company-mode 1)))
+(add-hook 'less-css-mode-hook
+          (lambda ()
+            (replique/minor-mode 1)
+            (company-mode 1)))
 (add-hook 'clojure-mode-hook
 	  (lambda ()
 	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
@@ -185,6 +202,11 @@
             (define-key smartparens-strict-mode-map [remap kill-region] nil)
             (define-key smartparens-strict-mode-map [remap delete-region] nil)))
 
+
+(add-hook 'eshell-mode-hook
+	  (lambda ()
+            (company-mode 1)))
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
@@ -198,9 +220,8 @@
 
   (if (package-installed-p 'exec-path-from-shell)
       (exec-path-from-shell-copy-env "PATH")
-      (progn (package-refresh-contents)
-             (package-install 'exec-path-from-shell)))
-  
+    (progn (package-refresh-contents)
+           (package-install 'exec-path-from-shell)))
 
   (unless (package-installed-p 'elisp-slime-nav)
     (package-refresh-contents)
@@ -230,6 +251,22 @@
   (unless (package-installed-p 'clojure-mode)
     (package-refresh-contents)
     (package-install 'clojure-mode))
+
+  (unless (package-installed-p 'stylus-mode)
+    (package-refresh-contents)
+    (package-install 'stylus-mode))
+  
+  (unless (package-installed-p 'sass-mode)
+    (package-refresh-contents)
+    (package-install 'sass-mode))
+
+  (unless (package-installed-p 'scss-mode)
+    (package-refresh-contents)
+    (package-install 'scss-mode))
+
+  (unless (package-installed-p 'less-css-mode)
+    (package-refresh-contents)
+    (package-install 'less-css-mode))
 
   ;;Very large files
   (unless (package-installed-p 'vlf)
