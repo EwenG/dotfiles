@@ -62,8 +62,6 @@
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
-(add-to-list 'load-path "~/replique.el/")
-
 ;; Make horizontal split the default
 (setq split-width-threshold 160)
 
@@ -100,8 +98,15 @@
 
 ;;Enable replique-minor-mode
 (add-hook 'clojure-mode-hook 'replique/minor-mode)
-(add-hook 'css-mode-hook 'replique/minor-mode)
-(add-hook 'js-mode-hook 'replique/minor-mode)
+
+(add-hook 'css-mode-hook (lambda ()
+                           (replique/minor-mode 1)
+                           (company-mode 1)))
+(add-hook 'js2-mode-hook (lambda ()
+                           (replique/minor-mode 1)
+                           (company-mode 1)
+                           ;; js2mode indent with 2 spaces
+                           (setq js2-basic-offset 2)))
 (add-hook 'stylus-mode-hook
           (lambda ()
             (replique/minor-mode 1)
@@ -160,8 +165,8 @@
             (define-key company-active-map (kbd "C-n") 'company-select-next)
             (define-key company-active-map (kbd "C-p") 'company-select-previous)))
 
-;; js2mode indent with 2 spaces
-(setq js2-basic-offset 2)
+;; open javascript files with js2-mode
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
 ;; Open current directory in file explorer
 
@@ -204,7 +209,9 @@
 
 
 (add-hook 'eshell-mode-hook
-	  (lambda ()
+          (lambda ()
+            ;; Use bash-like completion
+            (setq pcomplete-cycle-completions nil)
             (company-mode 1)))
 
 (require 'ewen)
@@ -217,6 +224,9 @@
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
   ;; Org-mode's repository
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+  (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/replique.el/master/packages/") t)
+  (add-to-list 'load-path "~/replique.el")
+  
 
   (if (package-installed-p 'exec-path-from-shell)
       (exec-path-from-shell-copy-env "PATH")
@@ -292,6 +302,10 @@
   (setq ivy-do-completion-in-region nil)
   (ivy-mode 1)
 
+  (unless (package-installed-p 'replique)
+    (package-refresh-contents)
+  (package-install 'replique))
+
   (require 'replique)
 
   ;; No toolbar
@@ -308,8 +322,8 @@
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
   (package-install 'zenburn-theme))
-  (load-theme 'zenburn t)
+  ;;(load-theme 'zenburn t)
 
-  ;;(load-theme 'adwaita t)
+  (load-theme 'adwaita t)
 
   )
