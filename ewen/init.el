@@ -52,9 +52,12 @@
 (setq mac-control-modifier 'meta)
 (setq mac-right-option-modifier nil)
 
-;; Start in fullscreen mode
+;; Start in fullscreen mode (osx)
 ;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
-(run-at-time 1 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
+;; (run-at-time 1 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
+
+;; Start maximized (ubuntu)
+(toggle-frame-maximized)
 
 ;; other-window in reverse
 (define-key global-map (kbd "C-x p") (lambda () (interactive) (other-window -1)))
@@ -111,26 +114,16 @@
           (lambda ()
             (replique/minor-mode 1)
             (company-mode 1)))
-(add-hook 'scss-mode-hook
-          (lambda ()
-            (replique/minor-mode 1)
-            (company-mode 1)))
-(add-hook 'sass-mode-hook
-          (lambda ()
-            (replique/minor-mode 1)
-            (company-mode 1)))
 (add-hook 'less-css-mode-hook
           (lambda ()
             (replique/minor-mode 1)
             (company-mode 1)))
 (add-hook 'clojure-mode-hook
 	  (lambda ()
-	    (sp-local-pair 'clojure-mode "'" nil :actions nil)
-	    (company-mode 1)))
+      (company-mode 1)))
 (add-hook 'replique/mode-hook
 	  (lambda ()
-	    (sp-local-pair 'replique/mode "'" nil :actions nil)
-	    (company-mode 1)))
+      (company-mode 1)))
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -177,6 +170,9 @@
       (browse-url-of-file (expand-file-name default-directory))
     (error "No `default-directory' to open")))
 
+;; Default web browser
+(setq browse-url-browser-function 'browse-url-chromium)
+
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
 	  (lambda ()
@@ -205,7 +201,8 @@
 (add-hook 'smartparens-mode-hook
           (lambda ()
             (define-key smartparens-strict-mode-map [remap kill-region] nil)
-            (define-key smartparens-strict-mode-map [remap delete-region] nil)))
+            (define-key smartparens-strict-mode-map [remap delete-region] nil)
+            (sp-pair "'" nil :actions :rem)))
 
 
 (add-hook 'eshell-mode-hook
@@ -218,6 +215,8 @@
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
 
+;; (set-face-attribute 'default nil :height 220)
+
 (defun ewen-after-init-hook ()
   (require 'package)
 
@@ -227,11 +226,13 @@
   (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/replique.el/master/packages/") t)
   (add-to-list 'load-path "~/replique.el")
   
-
-  (if (package-installed-p 'exec-path-from-shell)
-      (exec-path-from-shell-copy-env "PATH")
-    (progn (package-refresh-contents)
-           (package-install 'exec-path-from-shell)))
+  (when (memq window-system '(mac ns x))
+    (if (package-installed-p 'exec-path-from-shell)
+	(when (memq window-system '(mac ns x))
+	  (exec-path-from-shell-initialize)
+	  (exec-path-from-shell-copy-env "PATH"))
+      (package-refresh-contents)
+      (package-install 'exec-path-from-shell)))
 
   (unless (package-installed-p 'elisp-slime-nav)
     (package-refresh-contents)
@@ -270,13 +271,17 @@
     (package-refresh-contents)
     (package-install 'sass-mode))
 
-  (unless (package-installed-p 'scss-mode)
-    (package-refresh-contents)
-    (package-install 'scss-mode))
+  ;; (unless (package-installed-p 'scss-mode)
+  ;;   (package-refresh-contents)
+  ;;   (package-install 'scss-mode))
 
   (unless (package-installed-p 'less-css-mode)
     (package-refresh-contents)
     (package-install 'less-css-mode))
+
+  (unless (package-installed-p 'js2-mode)
+    (package-refresh-contents)
+    (package-install 'js2-mode))
 
   ;;Very large files
   (unless (package-installed-p 'vlf)
@@ -311,7 +316,7 @@
   ;; No toolbar
   (tool-bar-mode -1)
   ;; No menubar
-  (menu-bar-mode -1)
+  ;; (menu-bar-mode -1)
   
   ;; keyboard scroll one line at a time
   (setq scroll-step 1)
