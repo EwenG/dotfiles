@@ -211,6 +211,10 @@
             (setq pcomplete-cycle-completions nil)
             (company-mode 1)))
 
+(add-hook 'auto-revert-mode-hook
+          (lambda ()
+            (setq auto-revert-verbose nil)))
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
@@ -316,7 +320,7 @@
   ;; No toolbar
   (tool-bar-mode -1)
   ;; No menubar
-  ;; (menu-bar-mode -1)
+  (menu-bar-mode -1)
   
   ;; keyboard scroll one line at a time
   (setq scroll-step 1)
