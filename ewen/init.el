@@ -173,6 +173,12 @@
 ;; Default web browser
 (setq browse-url-browser-function 'browse-url-chromium)
 
+(defun ewen/with-universal-prefix-arg (command)
+  (lambda ()
+    (interactive)
+    (let ((current-prefix-arg '(4)))
+      (call-interactively 'counsel-ag))))
+
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
 	  (lambda ()
@@ -183,7 +189,7 @@
 (global-set-key (kbd "C-c C-s") 'isearch-forward-symbol-at-point)
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "C-c C-f") 'counsel-ag)
+(global-set-key (kbd "C-c C-f") (ewen/with-universal-prefix-arg 'counsel-ag))
 
 (add-hook 'projectile-mode-hook
 	  (lambda ()
