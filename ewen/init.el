@@ -342,6 +342,10 @@
   ;; Scroll before the cursor reaches the edge of the window
   (setq scroll-margin 6)
 
+  (unless (package-installed-p 'multiple-cursors)
+    (package-refresh-contents)
+    (package-install 'multiple-cursors))
+
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
   (package-install 'zenburn-theme))
