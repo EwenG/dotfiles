@@ -228,6 +228,9 @@
           (lambda ()
             (setq auto-revert-verbose nil)))
 
+;; Replique config
+(setq replique/replique-coords "{:local/root \"/home/ewen/clojure/replique\"}")
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
@@ -327,7 +330,7 @@
 
   (unless (package-installed-p 'replique)
     (package-refresh-contents)
-  (package-install 'replique))
+    (package-install 'replique))
 
   (require 'replique)
 
