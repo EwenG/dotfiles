@@ -177,7 +177,14 @@
   (lambda ()
     (interactive)
     (let ((current-prefix-arg '(4)))
-      (call-interactively 'counsel-ag))))
+      (call-interactively command))))
+
+(defun ewen/counsel-ag-in-directory ()
+  (interactive)
+  (let ((d (read-directory-name (concat
+                                 (car (split-string counsel-ag-base-command))
+                                 " in directory: "))))
+    (counsel-ag nil d)))
 
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
@@ -189,7 +196,7 @@
 (global-set-key (kbd "C-c C-s") 'isearch-forward-symbol-at-point)
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "C-c C-f") (ewen/with-universal-prefix-arg 'counsel-ag))
+(global-set-key (kbd "C-c C-f") 'ewen/counsel-ag-in-directory)
 
 (add-hook 'projectile-mode-hook
 	  (lambda ()
@@ -305,7 +312,8 @@
   (unless (package-installed-p 'counsel)
     (package-refresh-contents)
     (package-install 'counsel))
-  
+  (require 'counsel)
+
   (unless (package-installed-p 'swiper)
     (package-refresh-contents)
     (package-install 'swiper))
