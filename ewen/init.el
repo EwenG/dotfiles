@@ -215,8 +215,9 @@
           (lambda ()
             (define-key smartparens-strict-mode-map [remap kill-region] nil)
             (define-key smartparens-strict-mode-map [remap delete-region] nil)
-            (sp-pair "'" nil :actions :rem)))
-
+            (sp-pair "'" nil :actions :rem)
+            ;; sp-echo-match-when-invisible may have bad performance for huge forms
+            (setq sp-echo-match-when-invisible nil)))
 
 (add-hook 'eshell-mode-hook
           (lambda ()
