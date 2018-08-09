@@ -229,6 +229,8 @@
           (lambda ()
             (setq auto-revert-verbose nil)))
 
+(setq-default bidi-display-reordering nil)
+
 ;; Replique config
 (setq replique/replique-coords "{:local/root \"/home/ewen/clojure/replique\"}")
 
