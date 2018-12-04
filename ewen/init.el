@@ -30,7 +30,7 @@
   (let ((buffer-backed-up nil))
     (backup-buffer)))
 
-(add-hook 'before-save-hook  'force-backup-of-buffer)
+(add-hook 'before-save-hook 'force-backup-of-buffer)
 
 
 
@@ -229,6 +229,11 @@
           (lambda ()
             (setq auto-revert-verbose nil)))
 
+(add-hook 'gif-screencast-mode-hook
+          (lambda ()
+            ;; (define-key gif-screencast-mode-map (kbd "C-c s") 'gif-screencast-stop)
+            ))
+
 (setq-default bidi-display-reordering nil)
 
 ;; Replique config
@@ -248,6 +253,7 @@
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
   (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/replique.el/master/packages/") t)
   (add-to-list 'load-path "~/replique.el")
+  (add-to-list 'load-path "~/strette.el")
   
   (when (memq window-system '(mac ns x))
     (if (package-installed-p 'exec-path-from-shell)
@@ -351,6 +357,10 @@
   (unless (package-installed-p 'multiple-cursors)
     (package-refresh-contents)
     (package-install 'multiple-cursors))
+
+  (unless (package-installed-p 'gif-screencast)
+    (package-refresh-contents)
+    (package-install 'gif-screencast))
 
   (unless (package-installed-p 'zenburn-theme)
     (package-refresh-contents)
