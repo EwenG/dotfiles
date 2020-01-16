@@ -66,7 +66,8 @@
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
 ;; Make horizontal split the default
-(setq split-width-threshold 160)
+(setq split-width-threshold 240)
+(setq split-height-threshold 160)
 
 ;; Org indent mode
 (add-hook 'org-mode-hook
@@ -237,7 +238,7 @@
 (setq-default bidi-display-reordering nil)
 
 ;; Replique config
-(setq replique/replique-coords "{:local/root \"/home/ewen/clojure/replique\"}")
+(setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
 (require 'ewen)
 
