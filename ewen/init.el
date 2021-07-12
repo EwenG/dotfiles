@@ -270,9 +270,12 @@
   
   (when (memq window-system '(mac ns x))
     (if (package-installed-p 'exec-path-from-shell)
-	(when (memq window-system '(mac ns x))
-	  (exec-path-from-shell-initialize)
-	  (exec-path-from-shell-copy-env "PATH"))
+        (when (memq window-system '(mac ns x))
+          (exec-path-from-shell-initialize)
+          (exec-path-from-shell-copy-env "PATH")
+          (exec-path-from-shell-copy-env "AWS_ACCESS_KEY")
+          (exec-path-from-shell-copy-env "AWS_SECRET_KEY")
+          (exec-path-from-shell-copy-env "TRANSIFEX_API_TOKEN"))
       (package-refresh-contents)
       (package-install 'exec-path-from-shell)))
 
