@@ -6,3 +6,5 @@
 (load-file "~/.emacs.d/ewen/init.el")
 (setq custom-file "~/.emacs.d/ewen/custom.el")
 (load custom-file)
+;; Enable the downcase-region command
+(put 'downcase-region 'disabled nil)
