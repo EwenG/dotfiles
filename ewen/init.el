@@ -183,7 +183,7 @@
 (defun ewen/counsel-ag-in-directory ()
   (interactive)
   (let ((d (read-directory-name (concat
-                                 (car (split-string counsel-ag-base-command))
+                                 (car counsel-ag-base-command)
                                  " in directory: "))))
     (counsel-ag nil d)))
 

@@ -4,7 +4,7 @@
 (defun ewen/ag (&optional ag-args)
   (let ((initial-directory (read-directory-name
                             (concat
-                             (car (split-string counsel-ag-base-command))
+                             (car counsel-ag-base-command)
                              " in directory: "))))
     (counsel-ag nil initial-directory ag-args nil)))
 
@@ -13,7 +13,7 @@
   (interactive)
   (interactive)
   (let ((d (read-directory-name (concat
-                                 (car (split-string counsel-ag-base-command))
+                                 (car counsel-ag-base-command)
                                  " in directory: "))))
     (counsel-file-jump nil d)))
 
