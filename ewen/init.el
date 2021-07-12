@@ -262,7 +262,9 @@
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
   ;; Org-mode's repository
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-  (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/replique.el/master/packages/") t)
+  (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/EwenG.github.io/master/packages/") t)
+
+  (add-to-list 'load-path "~/clj-data.el")
   (add-to-list 'load-path "~/replique.el")
   (add-to-list 'load-path "~/strette.el")
   
