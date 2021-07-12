@@ -237,6 +237,16 @@
 
 (setq-default bidi-display-reordering nil)
 
+;; Lilypond osx
+
+(setq load-path (append (list (expand-file-name"/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp")) load-path))
+(autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
+(add-to-list 'auto-mode-alist '("\\.ly$" . LilyPond-mode))
+(add-to-list 'auto-mode-alist '("\\.ily$" . LilyPond-mode))
+(add-to-list 'auto-mode-alist '("\\.lytex$" . LilyPond-mode))
+(add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
+(define-obsolete-function-alias 'string-to-int 'string-to-number "22.1")
+
 ;; Replique config
 (setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
