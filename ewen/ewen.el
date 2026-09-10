@@ -58,6 +58,4 @@
                                          (car buffer-names-candidates))))
       (rename-buffer buffer-name))))
 
-(setq load-path (append (list (expand-file-name "~/lilypond")) load-path))
-
 (provide 'ewen)
