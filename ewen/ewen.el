@@ -10,10 +10,11 @@
     (format "*%s*" process-name)))
 
 (defun ewen/rename-buffer-with-process ()
-  "Try to find a good name for this buffer, based on the names of the processes associated with this buffer."
+  "Rename this buffer after one of the processes running in it.
+Candidates are the most deeply nested processes in the process tree
+of this buffer's process, as reported by pstree(1)."
   (interactive)
   (let* ((proc (get-buffer-process (current-buffer)))
-         (proc-name (process-name proc))
          (pid (process-id proc))
          (pids (with-temp-buffer
                  (insert (shell-command-to-string (format "pstree -p %d -g 3" pid)))
