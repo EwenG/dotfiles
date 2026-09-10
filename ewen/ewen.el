@@ -11,7 +11,6 @@
 (defun ewen/file-jump (&optional extra-ag-args)
   "Use ag to find files (using the ag \"-g\" flag)"
   (interactive)
-  (interactive)
   (let ((d (read-directory-name (concat
                                  (car counsel-ag-base-command)
                                  " in directory: "))))
