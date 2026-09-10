@@ -333,8 +333,9 @@
             ;; (define-key gif-screencast-mode-map (kbd "C-c s") 'gif-screencast-stop)
             ))
 
-(setq-default bidi-display-reordering nil)
-(setq-default bidi-inhibit-bpa t)
+;; Long-line redisplay performance.
+(setq-default bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
 
 ;; Lilypond mac os
 
@@ -350,7 +351,7 @@
 (setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
 ;; Fix "inappropriate ioctl for device" when using gpg
-(setq epa-pinentry-mode 'loopback)
+(setq epg-pinentry-mode 'loopback)
 
 (require 'ewen)
 
@@ -381,7 +382,7 @@
   (unless (package-installed-p 'projectile)
     (package-refresh-contents)
     (package-install 'projectile))
-  (projectile-global-mode)
+  (projectile-mode 1)
 
   (unless (package-installed-p 'company)
     (package-refresh-contents)
