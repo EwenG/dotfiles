@@ -329,6 +329,11 @@
 (add-to-list 'auto-mode-alist '("\\.ily$" . LilyPond-mode))
 (add-to-list 'auto-mode-alist '("\\.lytex$" . LilyPond-mode))
 (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
+;; Removed from Emacs in 26, but ~/lilypond/lilypond-what-beat.el still calls
+;; it five times -- that is C-c b (LilyPond-what-beat) in a .ly buffer.  The
+;; ~/lilypond tree is an unversioned 2020 snapshot, so the shim lives here
+;; where git keeps it rather than as a patch that a re-copy would silently
+;; undo.
 (define-obsolete-function-alias 'string-to-int 'string-to-number "22.1")
 
 ;; Replique config
