@@ -2,6 +2,8 @@
 
 (toggle-debug-on-error)
 
+(setq gc-cons-threshold 3500000)
+
 ;; No startup screen
 (setq inhibit-startup-screen t)
 
@@ -44,15 +46,18 @@
 (setq-default tab-width 2)
 (setq-default css-indent-offset 2)
 
+(setq-default fill-column 80)
+
 ;; Disabled the alarm bell
 (setq ring-bell-function 'ignore)
 
-;; osx specific
+;; mac os specific
 (setq mac-command-modifier 'control)
 (setq mac-control-modifier 'meta)
 (setq mac-right-option-modifier nil)
+(setq mac-pass-command-to-system nil)
 
-;; Start in fullscreen mode (osx)
+;; Start in fullscreen mode (mac os)
 ;; This is buggy on my computer since emacs 25, a workaround is to use run-at-time
 ;; (run-at-time 1 nil (lambda () (set-frame-parameter nil 'fullscreen 'fullboth)))
 
@@ -73,16 +78,21 @@
 (add-hook 'org-mode-hook
           (lambda ()
             (org-indent-mode t)
-            (define-key smartparens-mode-map (kbd "M-<up>") nil)
-            (define-key smartparens-mode-map (kbd "M-<down>") nil)
+            (turn-on-auto-fill)
+            (define-key org-mode-map (kbd "C-<left>") #'org-metaleft)
+            (define-key org-mode-map (kbd "C-<right>") #'org-metaright)
             ;; (setq visual-line-mode 1)
-            (require 'epresent)
-            (require 'ob-sh)
             (require 'ob-replique)
             (setq org-confirm-babel-evaluate nil)
             (push
              '("sr" "#+RESULTS:\n:" "")
              org-structure-template-alist)))
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (gnuplot . t))))
 
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
@@ -96,12 +106,17 @@
 (global-set-key [(control down)] 'gcm-scroll-down)
 (global-set-key [(control up)] 'gcm-scroll-up)
 
-;;Ediff - split horizontally by default
+(setq-default treesit-font-lock-level 4)
+
+;; Ediff
 (custom-set-variables
+ ;; Don't show a separate window for the control panel 
+ '(ediff-window-setup-function 'ediff-setup-windows-plain)
+ ;; Split horizontally by default
  '(ediff-split-window-function 'split-window-horizontally))
 
 ;;Enable replique-minor-mode
-(add-hook 'clojure-mode-hook 'replique/minor-mode)
+(add-hook 'replique-clojure-mode-hook 'replique/minor-mode)
 
 (add-hook 'css-mode-hook (lambda ()
                            (replique/minor-mode 1)
@@ -115,16 +130,20 @@
           (lambda ()
             (replique/minor-mode 1)
             (company-mode 1)))
+
 (add-hook 'less-css-mode-hook
           (lambda ()
             (replique/minor-mode 1)
             (company-mode 1)))
-(add-hook 'clojure-mode-hook
-	  (lambda ()
-      (company-mode 1)))
+
+(add-hook 'replique-clojure-mode-hook
+	        (lambda ()
+            (company-mode 1)))
+
 (add-hook 'replique/mode-hook
-	  (lambda ()
-      (company-mode 1)))
+	        (lambda ()
+            (company-mode 1)
+            (set-face-attribute 'replique-clojure-keyword-face nil :weight 'bold)))
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -139,6 +158,40 @@
 (add-hook 'comint-mode-hook
           (lambda ()
             (setq comint-input-ignoredups t)))
+
+;; Use the tree-sitter C mode (better nav/imenu than cc-mode)
+(setq treesit-language-source-alist                                                                                                                                                                          
+      '((c   . ("https://github.com/tree-sitter/tree-sitter-c"))                                                                                                                                             
+        (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp"))))
+(add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))                                                                                                
+(with-eval-after-load 'eglot
+  ;; clangd is at /usr/bin/clangd — good defaults, but be explicit:
+  (add-to-list 'eglot-server-programs
+               '(c-ts-mode . ("clangd" "--header-insertion=never"
+                              ;; static analysis inline    
+                              "--clang-tidy"))))
+(add-hook 'c-ts-mode-hook #'eglot-ensure)
+
+(use-package clang-format
+  :ensure t
+  :commands (clang-format-buffer clang-format-region))
+
+(use-package dape :ensure t)
+
+(with-eval-after-load 'dape                                                                                                                                           
+    ;; Launch a fresh Emacs under the debugger.
+    ;; (Never attach to your editing Emacs -- attaching stops the target,
+    ;;  which would freeze the very Emacs running dape.)                                                                                                                               
+    (add-to-list 'dape-configs                                                                                                                                          
+      `(lldb-emacs                                                                                                                                                     
+        modes nil                                                                                                                                                       
+        ensure dape-ensure-command                                                                                                                                      
+        command "/opt/homebrew/opt/llvm/bin/lldb-dap"
+        command-cwd ,(expand-file-name "~/clojure/tree-sitter-treejure")                                                                                                
+        :type "lldb-dap"                                                                                                                                                
+        :request "launch"
+        :program "/Applications/Emacs.app/Contents/MacOS/Emacs-arm64-11"
+        :args [])))
 
 (defun ewen/in-eval-expression-p ()
   (equal this-command 'eval-expression))
@@ -187,6 +240,33 @@
                                  " in directory: "))))
     (counsel-ag nil d)))
 
+;; Fonts
+
+;; (set-face-attribute 'default nil
+;;                     :font "aporetic"
+;;                     :height 130)
+
+;; 1. Set the Default Font (for the editor)
+;; :height is in 1/10pt. 130 = 13pt.
+(set-face-attribute 'default nil 
+                    :font "JetBrains Mono" 
+                    :height 130
+                    :weight 'bold)
+
+;; 2. Set Fixed-Pitch (for code blocks in Org-mode, etc.)
+;; It's best to inherit from 'default to keep it crisp.
+(set-face-attribute 'fixed-pitch nil 
+                    :inherit 'default)
+
+;; 3. Set Variable-Pitch (for prose, comments, or documentation)
+;; Using a serif or clean sans-serif font makes comments feel distinct.
+(set-face-attribute 'variable-pitch nil 
+                    :font "Iosevka Aile" 
+                    :height 1.0)
+
+;; On macOS, this makes fonts look sharper/thinner
+(setq ns-use-thin-smoothing t)
+
 ;; Ivy-mode
 (add-hook 'ivy-mode-hook
 	  (lambda ()
@@ -201,7 +281,10 @@
 
 (add-hook 'projectile-mode-hook
 	  (lambda ()
-	    (setq projectile-completion-system 'ivy)))
+	    (setq projectile-completion-system 'ivy)
+      ;; Set to hybrid in order to enable the .projectile file
+      ;; (when the value is alien, .projectile is ignored)
+      (setq projectile-indexing-method 'hybrid)))
 (global-set-key (kbd "C-c p f") 'projectile-find-file)
 (global-set-key (kbd "C-c p p") 'projectile-switch-project)
 
@@ -226,6 +309,10 @@
             (setq pcomplete-cycle-completions nil)
             (company-mode 1)))
 
+(add-hook 'agent-shell-mode-hook
+          (lambda ()
+            (setq-local completion-in-region-function #'ivy-completion-in-region)))
+
 (add-hook 'auto-revert-mode-hook
           (lambda ()
             (setq auto-revert-verbose nil)))
@@ -236,8 +323,9 @@
             ))
 
 (setq-default bidi-display-reordering nil)
+(setq-default bidi-inhibit-bpa t)
 
-;; Lilypond osx
+;; Lilypond mac os
 
 (setq load-path (append (list (expand-file-name"/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp")) load-path))
 (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
@@ -250,11 +338,12 @@
 ;; Replique config
 (setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
+;; Fix "inappropriate ioctl for device" when using gpg
+(setq epa-pinentry-mode 'loopback)
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
-
-;; (set-face-attribute 'default nil :height 220)
 
 (defun ewen-after-init-hook ()
   (require 'package)
@@ -266,6 +355,7 @@
 
   (add-to-list 'load-path "~/clj-data.el")
   (add-to-list 'load-path "~/replique.el")
+  ;; (add-to-list 'load-path "~/replique.el-2")
   (add-to-list 'load-path "~/strette.el")
   
   (when (memq window-system '(mac ns x))
@@ -275,7 +365,10 @@
           (exec-path-from-shell-copy-env "PATH")
           (exec-path-from-shell-copy-env "AWS_ACCESS_KEY")
           (exec-path-from-shell-copy-env "AWS_SECRET_KEY")
-          (exec-path-from-shell-copy-env "TRANSIFEX_API_TOKEN"))
+          (exec-path-from-shell-copy-env "TRANSIFEX_API_TOKEN")
+          (setenv "QT_QPA_PLATFORM_PLUGIN_PATH" "/opt/homebrew/opt/qtbase/share/qt/plugins/platforms/")
+          (setenv "LANG" "en_US.UTF-8")
+          (setenv "LC_ALL" "en_US.UTF-8"))
       (package-refresh-contents)
       (package-install 'exec-path-from-shell)))
 
@@ -303,10 +396,6 @@
   (smartparens-global-mode 1)
   (smartparens-global-strict-mode 1)
   (show-smartparens-global-mode 1)
-
-  (unless (package-installed-p 'clojure-mode)
-    (package-refresh-contents)
-    (package-install 'clojure-mode))
 
   (unless (package-installed-p 'stylus-mode)
     (package-refresh-contents)
@@ -353,6 +442,74 @@
   (setq ivy-do-completion-in-region nil)
   (ivy-mode 1)
 
+  (unless (package-installed-p 'magit)
+    (package-refresh-contents)
+    (package-install 'magit))
+
+  (use-package ghostel
+    :ensure t
+    :vc (:url "https://github.com/dakra/ghostel" :lisp-dir "lisp" :rev :newest)
+    :config
+    ;; Automatically clean up terminal buffers when Claude exits
+    (setq ghostel-kill-buffer-on-exit t))
+
+  ;; claude-code.el dependencies
+  (use-package inheritenv :ensure t)
+  (use-package transient :ensure t)
+  
+  (use-package vterm :ensure t)
+  (setq vterm-max-scrollback 100000)
+
+  (use-package claude-code
+    :ensure t
+    :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+    :bind-keymap ("C-c c" . claude-code-command-map) ; Binds C-c c as the prefix key
+    :config
+    ;; Choose your terminal backend: 'vterm, 'eat, or 'ghostel
+    (setq claude-code-terminal-backend 'ghostel)
+
+    ;; (Optional) Swap RET and M-RET if you prefer standard Enter for typing newlines,
+    ;; and Alt-Enter to submit prompts to Claude.
+    ;; (setq claude-code-swap-return t)
+
+    ;; Enable standard Claude Code minor mode features globally
+    (claude-code-mode 1))
+
+  (with-eval-after-load 'claude-code
+  (require 'cl-generic)
+  
+  ;; Redefine the ghostel read-only check to support the new input-mode variables
+  (cl-defmethod claude-code--term-in-read-only-p ((backend (eql ghostel)))
+    "Compatibility patch for new ghostel input modes."
+    (cond
+     ;; If using the new ghostel (0.28.0+), check for copy/emacs states
+     ((boundp 'ghostel--input-mode)
+      (memq ghostel--input-mode '(copy emacs)))
+     ;; Fall back to the old variable if it is still defined
+     ((boundp 'ghostel--copy-mode-active)
+      ghostel--copy-mode-active)
+     ;; Safe default fallback to prevent crashes
+     (t nil))))
+
+  (use-package agent-shell :ensure t)
+  (setq agent-shell-session-restore-strategy 'full)
+
+  ;; (add-hook 'agent-shell-mode-hook #'agent-recall-track-sessions)
+
+  ;; (use-package agent-recall
+  ;;   :ensure t
+  ;;   :after agent-shell
+  ;;   :config (setq agent-recall-search-paths '("~/clojure")))
+
+  (use-package plz :ensure t)
+
+  (use-package markdown-mode
+    :ensure t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command "multimarkdown")
+    :bind (:map markdown-mode-map
+                ("C-c C-e" . markdown-do)))
+
   (unless (package-installed-p 'replique)
     (package-refresh-contents)
     (package-install 'replique))
@@ -378,11 +535,29 @@
     (package-refresh-contents)
     (package-install 'gif-screencast))
 
-  (unless (package-installed-p 'zenburn-theme)
-    (package-refresh-contents)
-  (package-install 'zenburn-theme))
-  ;;(load-theme 'zenburn t)
+  (use-package catppuccin-theme
+    :ensure t
+    :config
+    (load-theme 'catppuccin t)
+    (setq catppuccin-flavor 'latte)
+    (catppuccin-reload))
 
-  (load-theme 'adwaita t)
+  (set-face-attribute 'font-lock-comment-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-string-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-constant-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-function-call-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-type-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-variable-name-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-builtin-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-delimiter-face nil :weight 'bold)
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :weight 'bold)
+  (set-face-attribute 'comint-highlight-prompt nil :weight 'bold)
+  
+  (unless (package-installed-p 'editorconfig)
+    (package-refresh-contents)
+    (package-install 'editorconfig))
+  (editorconfig-mode 1)
 
   )
