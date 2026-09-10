@@ -76,8 +76,12 @@
 ;; `windmove-mode-map', a MINOR-mode map, so it would override org-mode's own
 ;; S-<arrow> (todo state, priority, timestamp) rather than losing to it.
 (windmove-default-keybindings '(control shift))
-;; other-window in reverse
-(define-key global-map (kbd "M-o") (lambda () (interactive) (other-window -1)))
+(defun ewen/other-window-backward ()
+  "Select the previous window, like `other-window' in reverse."
+  (interactive)
+  (other-window -1))
+
+(define-key global-map (kbd "M-o") 'ewen/other-window-backward)
 
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
