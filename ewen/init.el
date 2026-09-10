@@ -145,36 +145,37 @@
             (company-mode 1)))
 
 (add-hook 'replique-clojure-mode-hook
-	        (lambda ()
+          (lambda ()
             (company-mode 1)))
 
 (add-hook 'replique/mode-hook
-	        (lambda ()
+          (lambda ()
             (company-mode 1)
             (set-face-attribute 'replique-clojure-keyword-face nil :weight 'bold)))
 
+(define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
+
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            ;; Handle the case when the packages are initialized for
-            ;; the first time
             (when (package-installed-p 'elisp-slime-nav)
-              (elisp-slime-nav-mode 1)
-              (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer))
+              (elisp-slime-nav-mode 1))
             (when (package-installed-p 'company)
               (company-mode 1))))
 
 (setq comint-input-ignoredups t)
 
 ;; Use the tree-sitter C mode (better nav/imenu than cc-mode)
-(setq treesit-language-source-alist                                                                                                                                                                          
-      '((c   . ("https://github.com/tree-sitter/tree-sitter-c"))                                                                                                                                             
-        (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp"))))
-(add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))                                                                                                
+(with-eval-after-load 'treesit
+  (add-to-list 'treesit-language-source-alist
+               '(c . ("https://github.com/tree-sitter/tree-sitter-c")))
+  (add-to-list 'treesit-language-source-alist
+               '(cpp . ("https://github.com/tree-sitter/tree-sitter-cpp"))))
+(add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
 (with-eval-after-load 'eglot
   ;; clangd is at /usr/bin/clangd — good defaults, but be explicit:
   (add-to-list 'eglot-server-programs
                '(c-ts-mode . ("clangd" "--header-insertion=never"
-                              ;; static analysis inline    
+                              ;; static analysis inline
                               "--clang-tidy"))))
 (add-hook 'c-ts-mode-hook #'eglot-ensure)
 
@@ -184,17 +185,17 @@
 
 (use-package dape :ensure t)
 
-(with-eval-after-load 'dape                                                                                                                                           
+(with-eval-after-load 'dape
     ;; Launch a fresh Emacs under the debugger.
     ;; (Never attach to your editing Emacs -- attaching stops the target,
-    ;;  which would freeze the very Emacs running dape.)                                                                                                                               
-    (add-to-list 'dape-configs                                                                                                                                          
-      `(lldb-emacs                                                                                                                                                     
-        modes nil                                                                                                                                                       
-        ensure dape-ensure-command                                                                                                                                      
+    ;;  which would freeze the very Emacs running dape.)
+    (add-to-list 'dape-configs
+      `(lldb-emacs
+        modes nil
+        ensure dape-ensure-command
         command "/opt/homebrew/opt/llvm/bin/lldb-dap"
-        command-cwd ,(expand-file-name "~/clojure/tree-sitter-treejure")                                                                                                
-        :type "lldb-dap"                                                                                                                                                
+        command-cwd ,(expand-file-name "~/clojure/tree-sitter-treejure")
+        :type "lldb-dap"
         :request "launch"
         :program "/Applications/Emacs.app/Contents/MacOS/Emacs-arm64-11"
         :args [])))
@@ -249,20 +250,20 @@
 
 ;; 1. Set the Default Font (for the editor)
 ;; :height is in 1/10pt. 130 = 13pt.
-(set-face-attribute 'default nil 
-                    :font "JetBrains Mono" 
+(set-face-attribute 'default nil
+                    :font "JetBrains Mono"
                     :height 130
                     :weight 'bold)
 
 ;; 2. Set Fixed-Pitch (for code blocks in Org-mode, etc.)
 ;; It's best to inherit from 'default to keep it crisp.
-(set-face-attribute 'fixed-pitch nil 
+(set-face-attribute 'fixed-pitch nil
                     :inherit 'default)
 
 ;; 3. Set Variable-Pitch (for prose, comments, or documentation)
 ;; Using a serif or clean sans-serif font makes comments feel distinct.
-(set-face-attribute 'variable-pitch nil 
-                    :font "Iosevka Aile" 
+(set-face-attribute 'variable-pitch nil
+                    :font "Iosevka Aile"
                     :height 1.0)
 
 ;; On macOS, this makes fonts look sharper/thinner
@@ -313,7 +314,7 @@
 (setq-default bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)
 
-;; Lilypond mac os
+;; LilyPond
 
 (add-to-list 'load-path (expand-file-name "~/lilypond"))
 (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
