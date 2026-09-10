@@ -122,12 +122,6 @@
 
 (setq-default treesit-font-lock-level 4)
 
-;; Ediff
-(custom-set-variables
- ;; Don't show a separate window for the control panel 
- '(ediff-window-setup-function 'ediff-setup-windows-plain)
- ;; Split horizontally by default
- '(ediff-split-window-function 'split-window-horizontally))
 
 ;;Enable replique-minor-mode
 (add-hook 'replique-clojure-mode-hook 'replique/minor-mode)
@@ -169,9 +163,7 @@
             (when (package-installed-p 'company)
               (company-mode 1))))
 
-(add-hook 'comint-mode-hook
-          (lambda ()
-            (setq comint-input-ignoredups t)))
+(setq comint-input-ignoredups t)
 
 ;; Use the tree-sitter C mode (better nav/imenu than cc-mode)
 (setq treesit-language-source-alist                                                                                                                                                                          
@@ -219,12 +211,11 @@
             (smartparens-strict-mode 1)
             (show-smartparens-mode 1)))
 
-(add-hook 'company-mode-hook
-          (lambda ()
-            (setq company-minimum-prefix-length 2)
-            (define-key company-active-map (kbd "TAB") 'company-complete-selection)
-            (define-key company-active-map (kbd "C-n") 'company-select-next)
-            (define-key company-active-map (kbd "C-p") 'company-select-previous)))
+(setq company-minimum-prefix-length 2)
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "TAB") 'company-complete-selection)
+  (define-key company-active-map (kbd "C-n") 'company-select-next)
+  (define-key company-active-map (kbd "C-p") 'company-select-previous))
 
 ;; open javascript files with js2-mode
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
@@ -284,11 +275,10 @@
 (setq ns-use-thin-smoothing t)
 
 ;; Ivy-mode
-(add-hook 'ivy-mode-hook
-	  (lambda ()
-	    (setq ivy-use-virtual-buffers t)
-	    (setq ivy-height 10)
-	    (setq ivy-count-format "(%d/%d) ")))
+(setq ivy-use-virtual-buffers t)
+(setq ivy-height 10)
+(setq ivy-count-format "(%d/%d) ")
+(setq ivy-do-completion-in-region nil)
 (global-set-key (kbd "C-s") 'swiper)
 (global-set-key (kbd "C-c C-s") 'isearch-forward-symbol-at-point)
 (global-set-key (kbd "M-x") 'counsel-M-x)
@@ -310,13 +300,12 @@
 (global-set-key (kbd "C-<right>") 'sp-forward-slurp-sexp)
 (global-set-key (kbd "C-<left>") 'sp-forward-barf-sexp)
 (global-set-key (kbd "C-a") 'beginning-of-line-text)
-(add-hook 'smartparens-mode-hook
-          (lambda ()
-            (define-key smartparens-strict-mode-map [remap kill-region] nil)
-            (define-key smartparens-strict-mode-map [remap delete-region] nil)
-            (sp-pair "'" nil :actions :rem)
-            ;; sp-echo-match-when-invisible may have bad performance for huge forms
-            (setq sp-echo-match-when-invisible nil)))
+(with-eval-after-load 'smartparens-config
+  (define-key smartparens-strict-mode-map [remap kill-region] nil)
+  (define-key smartparens-strict-mode-map [remap delete-region] nil)
+  (sp-pair "'" nil :actions :rem)
+  ;; sp-echo-match-when-invisible may have bad performance for huge forms
+  (setq sp-echo-match-when-invisible nil))
 
 (add-hook 'eshell-mode-hook
           (lambda ()
@@ -324,9 +313,7 @@
             (setq pcomplete-cycle-completions nil)
             (company-mode 1)))
 
-(add-hook 'auto-revert-mode-hook
-          (lambda ()
-            (setq auto-revert-verbose nil)))
+(setq auto-revert-verbose nil)
 
 (add-hook 'gif-screencast-mode-hook
           (lambda ()
@@ -364,90 +351,28 @@
   (add-to-list 'load-path "~/strette.el")
 
   (when (memq window-system '(mac ns x))
-    (unless (package-installed-p 'exec-path-from-shell)
-      (package-refresh-contents)
-      (package-install 'exec-path-from-shell))
-    (require 'exec-path-from-shell)
-    (exec-path-from-shell-initialize)
-    (dolist (var '("PATH" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "TRANSIFEX_API_TOKEN"))
-      (exec-path-from-shell-copy-env var))
+    (use-package exec-path-from-shell
+      :ensure t
+      :config
+      (exec-path-from-shell-initialize)
+      (dolist (var '("PATH" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "TRANSIFEX_API_TOKEN"))
+        (exec-path-from-shell-copy-env var)))
     (setenv "QT_QPA_PLATFORM_PLUGIN_PATH" "/opt/homebrew/opt/qtbase/share/qt/plugins/platforms/")
     (setenv "LANG" "en_US.UTF-8")
     (setenv "LC_ALL" "en_US.UTF-8"))
 
-  (unless (package-installed-p 'elisp-slime-nav)
-    (package-refresh-contents)
-    (package-install 'elisp-slime-nav))
-  
-  (unless (package-installed-p 'projectile)
-    (package-refresh-contents)
-    (package-install 'projectile))
-  (projectile-mode 1)
-
-  (unless (package-installed-p 'company)
-    (package-refresh-contents)
-    (package-install 'company))
-  
-  (unless (package-installed-p 'nix-mode)
-    (package-refresh-contents)
-    (package-install 'nix-mode))
-
-  (unless (package-installed-p 'smartparens)
-    (package-refresh-contents)
-    (package-install 'smartparens))
-  (require 'smartparens-config)
-  (smartparens-global-mode 1)
-  (smartparens-global-strict-mode 1)
-  (show-smartparens-global-mode 1)
-
-  (unless (package-installed-p 'stylus-mode)
-    (package-refresh-contents)
-    (package-install 'stylus-mode))
-  
-  (unless (package-installed-p 'sass-mode)
-    (package-refresh-contents)
-    (package-install 'sass-mode))
-
-  ;; (unless (package-installed-p 'scss-mode)
-  ;;   (package-refresh-contents)
-  ;;   (package-install 'scss-mode))
-
-  (unless (package-installed-p 'less-css-mode)
-    (package-refresh-contents)
-    (package-install 'less-css-mode))
-
-  (unless (package-installed-p 'js2-mode)
-    (package-refresh-contents)
-    (package-install 'js2-mode))
-
-  ;;Very large files
-  (unless (package-installed-p 'vlf)
-    (package-refresh-contents)
-    (package-install 'vlf))
-
-  (unless (package-installed-p 'ivy)
-    (package-refresh-contents)
-    (package-install 'ivy))
-  
-  (unless (package-installed-p 'counsel)
-    (package-refresh-contents)
-    (package-install 'counsel))
-  (require 'counsel)
-
-  (unless (package-installed-p 'swiper)
-    (package-refresh-contents)
-    (package-install 'swiper))
-
-  ;; Swiper
-  (require 'ivy)
-  ;; Dont use ivy autocompletion when manually triggering autocompletion
-  ;; (for example in minibuffer)
-  (setq ivy-do-completion-in-region nil)
-  (ivy-mode 1)
-
-  (unless (package-installed-p 'magit)
-    (package-refresh-contents)
-    (package-install 'magit))
+  (use-package elisp-slime-nav  :ensure t :defer t)
+  (use-package company          :ensure t :defer t)
+  (use-package nix-mode         :ensure t :defer t)
+  (use-package stylus-mode      :ensure t :defer t)
+  (use-package sass-mode        :ensure t :defer t)
+  (use-package less-css-mode    :ensure t :defer t)
+  (use-package js2-mode         :ensure t :defer t)
+  (use-package vlf              :ensure t :defer t) ; very large files
+  (use-package swiper           :ensure t :defer t)
+  (use-package magit            :ensure t :defer t)
+  (use-package multiple-cursors :ensure t :defer t)
+  (use-package gif-screencast   :ensure t :defer t)
 
   ;; transient: required by magit and nix-mode.
   (use-package transient :ensure t)
@@ -461,30 +386,40 @@
     :bind (:map markdown-mode-map
                 ("C-c C-e" . markdown-do)))
 
-  (unless (package-installed-p 'replique)
-    (package-refresh-contents)
-    (package-install 'replique))
+  (use-package projectile
+    :ensure t
+    :config (projectile-mode 1))
 
-  (require 'replique)
+  (use-package smartparens
+    :ensure t
+    :config
+    (require 'smartparens-config)
+    (smartparens-global-mode 1)
+    (smartparens-global-strict-mode 1)
+    (show-smartparens-global-mode 1))
+
+  (use-package counsel :ensure t)
+
+  (use-package ivy
+    :ensure t
+    :config (ivy-mode 1))
+
+  (use-package replique :ensure t)
+
+  (use-package editorconfig
+    :ensure t
+    :config (editorconfig-mode 1))
 
   ;; No toolbar
   (tool-bar-mode -1)
   ;; No menubar
   (menu-bar-mode -1)
-  
+
   ;; keyboard scroll one line at a time
   (setq scroll-step 1)
   (setq scroll-conservatively 10000)
   ;; Scroll before the cursor reaches the edge of the window
   (setq scroll-margin 6)
-
-  (unless (package-installed-p 'multiple-cursors)
-    (package-refresh-contents)
-    (package-install 'multiple-cursors))
-
-  (unless (package-installed-p 'gif-screencast)
-    (package-refresh-contents)
-    (package-install 'gif-screencast))
 
   (use-package catppuccin-theme
     :ensure t
@@ -505,10 +440,5 @@
   (set-face-attribute 'font-lock-delimiter-face nil :weight 'bold)
   (set-face-attribute 'font-lock-comment-delimiter-face nil :weight 'bold)
   (set-face-attribute 'comint-highlight-prompt nil :weight 'bold)
-  
-  (unless (package-installed-p 'editorconfig)
-    (package-refresh-contents)
-    (package-install 'editorconfig))
-  (editorconfig-mode 1)
 
   )
