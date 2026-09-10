@@ -301,8 +301,6 @@
       ;; Set to hybrid in order to enable the .projectile file
       ;; (when the value is alien, .projectile is ignored)
       (setq projectile-indexing-method 'hybrid)))
-(global-set-key (kbd "C-c p f") 'projectile-find-file)
-(global-set-key (kbd "C-c p p") 'projectile-switch-project)
 
 ;; Smartparens config
 (global-set-key (kbd "C-M-f") 'sp-forward-sexp)
