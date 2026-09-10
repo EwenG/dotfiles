@@ -302,6 +302,11 @@
       ;; (when the value is alien, .projectile is ignored)
       (setq projectile-indexing-method 'hybrid)))
 
+;; `project-switch-project' reads project.el's OWN remembered-project list
+;; (`project-list-file'), which is separate from projectile's known-projects.
+(with-eval-after-load 'project
+  (define-key project-prefix-map "p" #'projectile-switch-project))
+
 ;; Smartparens config
 (global-set-key (kbd "C-M-f") 'sp-forward-sexp)
 (global-set-key (kbd "C-M-b") 'sp-backward-sexp)
