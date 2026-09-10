@@ -234,12 +234,6 @@
 ;; Default web browser
 (setq browse-url-browser-function 'browse-url-chromium)
 
-(defun ewen/with-universal-prefix-arg (command)
-  (lambda ()
-    (interactive)
-    (let ((current-prefix-arg '(4)))
-      (call-interactively command))))
-
 (defun ewen/counsel-ag-in-directory ()
   (interactive)
   (let ((d (read-directory-name (concat
@@ -314,11 +308,6 @@
             (company-mode 1)))
 
 (setq auto-revert-verbose nil)
-
-(add-hook 'gif-screencast-mode-hook
-          (lambda ()
-            ;; (define-key gif-screencast-mode-map (kbd "C-c s") 'gif-screencast-stop)
-            ))
 
 ;; Long-line redisplay performance.
 (setq-default bidi-paragraph-direction 'left-to-right)

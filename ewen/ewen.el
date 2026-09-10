@@ -1,13 +1,5 @@
 ;;; ewen.el --- elisp utils  -*- lexical-binding: t; -*-
 
-;; Function to call ag programmatically
-(defun ewen/ag (&optional ag-args)
-  (let ((initial-directory (read-directory-name
-                            (concat
-                             (car counsel-ag-base-command)
-                             " in directory: "))))
-    (counsel-ag nil initial-directory ag-args nil)))
-
 (defun ewen/file-jump (&optional extra-ag-args)
   "Use ag to find files (using the ag \"-g\" flag)"
   (interactive)
