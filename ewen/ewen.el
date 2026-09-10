@@ -16,19 +16,6 @@
                                  " in directory: "))))
     (counsel-file-jump nil d)))
 
-(defun ewen/revert-all ()
-  "Revert all file buffers, without confirmation.
-Buffers visiting files that no longer exist are ignored.
-Files that are not readable (including do not exist) are ignored.
-Other errors while reverting a buffer are reported only as messages."
-  (interactive)
-  (let (file)
-    (dolist (buf  (buffer-list))
-      (setq file  (buffer-file-name buf))
-      (when (and file  (file-readable-p file))
-        (with-current-buffer buf
-          (with-demoted-errors "Error: %S" (revert-buffer t t)))))))
-
 (defun ewen/pid->process-buffer-name (pid)
   (let ((process-name (thread-last (string-to-number pid)
                         process-attributes
