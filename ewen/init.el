@@ -4,6 +4,13 @@
 
 (setq gc-cons-threshold 3500000)
 
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+;; Org-mode's repository
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(add-to-list 'package-archives
+             '("replique" . "https://raw.githubusercontent.com/EwenG/EwenG.github.io/master/packages/") t)
+
 ;; No startup screen
 (setq inhibit-startup-screen t)
 
@@ -74,25 +81,27 @@
 (setq split-width-threshold 240)
 (setq split-height-threshold 160)
 
-;; Org indent mode
+;; Org indent mode.
 (add-hook 'org-mode-hook
           (lambda ()
             (org-indent-mode t)
             (turn-on-auto-fill)
-            (define-key org-mode-map (kbd "C-<left>") #'org-metaleft)
-            (define-key org-mode-map (kbd "C-<right>") #'org-metaright)
             ;; (setq visual-line-mode 1)
-            (require 'ob-replique)
-            (setq org-confirm-babel-evaluate nil)
-            (push
-             '("sr" "#+RESULTS:\n:" "")
-             org-structure-template-alist)))
+            (require 'ob-replique)))
 
 (with-eval-after-load 'org
+  (define-key org-mode-map (kbd "C-<left>") #'org-metaleft)
+  (define-key org-mode-map (kbd "C-<right>") #'org-metaright)
+  (setq org-confirm-babel-evaluate nil)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (gnuplot . t))))
+
+(defun ewen/org-insert-results ()
+  "Insert a `#+RESULTS:' marker followed by an empty result line."
+  (interactive)
+  (insert "#+RESULTS:\n:"))
 
 ;; C-up and C-down to slowly scroll the buffer
 (defun gcm-scroll-down ()
@@ -218,11 +227,13 @@
 ;; Open current directory in file explorer
 
 (defun open-in-file-explorer ()
-  "Open the current file's directory however the OS would."
+  "Open the current file's directory in the OS file manager."
   (interactive)
-  (if default-directory
-      (browse-url-of-file (expand-file-name default-directory))
-    (error "No `default-directory' to open")))
+  (let ((dir (expand-file-name default-directory)))
+    (pcase system-type
+      ('darwin (call-process "open" nil 0 nil dir))
+      ('windows-nt (w32-shell-execute "open" dir))
+      (_ (call-process "xdg-open" nil 0 nil dir)))))
 
 ;; Default web browser
 (setq browse-url-browser-function 'browse-url-chromium)
@@ -346,31 +357,22 @@
 (add-hook 'after-init-hook 'ewen-after-init-hook)
 
 (defun ewen-after-init-hook ()
-  (require 'package)
-
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-  ;; Org-mode's repository
-  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-  (add-to-list 'package-archives '("replique" . "https://raw.githubusercontent.com/EwenG/EwenG.github.io/master/packages/") t)
-
   (add-to-list 'load-path "~/clj-data.el")
   (add-to-list 'load-path "~/replique.el")
   ;; (add-to-list 'load-path "~/replique.el-2")
   (add-to-list 'load-path "~/strette.el")
-  
+
   (when (memq window-system '(mac ns x))
-    (if (package-installed-p 'exec-path-from-shell)
-        (when (memq window-system '(mac ns x))
-          (exec-path-from-shell-initialize)
-          (exec-path-from-shell-copy-env "PATH")
-          (exec-path-from-shell-copy-env "AWS_ACCESS_KEY")
-          (exec-path-from-shell-copy-env "AWS_SECRET_KEY")
-          (exec-path-from-shell-copy-env "TRANSIFEX_API_TOKEN")
-          (setenv "QT_QPA_PLATFORM_PLUGIN_PATH" "/opt/homebrew/opt/qtbase/share/qt/plugins/platforms/")
-          (setenv "LANG" "en_US.UTF-8")
-          (setenv "LC_ALL" "en_US.UTF-8"))
+    (unless (package-installed-p 'exec-path-from-shell)
       (package-refresh-contents)
-      (package-install 'exec-path-from-shell)))
+      (package-install 'exec-path-from-shell))
+    (require 'exec-path-from-shell)
+    (exec-path-from-shell-initialize)
+    (dolist (var '("PATH" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "TRANSIFEX_API_TOKEN"))
+      (exec-path-from-shell-copy-env var))
+    (setenv "QT_QPA_PLATFORM_PLUGIN_PATH" "/opt/homebrew/opt/qtbase/share/qt/plugins/platforms/")
+    (setenv "LANG" "en_US.UTF-8")
+    (setenv "LC_ALL" "en_US.UTF-8"))
 
   (unless (package-installed-p 'elisp-slime-nav)
     (package-refresh-contents)
