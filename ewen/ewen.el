@@ -1,12 +1,6 @@
 ;;; ewen.el --- elisp utils  -*- lexical-binding: t; -*-
 
-(defun ewen/file-jump (&optional extra-ag-args)
-  "Use ag to find files (using the ag \"-g\" flag)"
-  (interactive)
-  (let ((d (read-directory-name (concat
-                                 (car counsel-ag-base-command)
-                                 " in directory: "))))
-    (counsel-file-jump nil d)))
+(require 'subr-x)
 
 (defun ewen/pid->process-buffer-name (pid)
   (let ((process-name (thread-last (string-to-number pid)
