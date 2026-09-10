@@ -323,10 +323,6 @@
             (setq pcomplete-cycle-completions nil)
             (company-mode 1)))
 
-(add-hook 'agent-shell-mode-hook
-          (lambda ()
-            (setq-local completion-in-region-function #'ivy-completion-in-region)))
-
 (add-hook 'auto-revert-mode-hook
           (lambda ()
             (setq auto-revert-verbose nil)))
@@ -452,60 +448,8 @@
     (package-refresh-contents)
     (package-install 'magit))
 
-  (use-package ghostel
-    :ensure t
-    :vc (:url "https://github.com/dakra/ghostel" :lisp-dir "lisp" :rev :newest)
-    :config
-    ;; Automatically clean up terminal buffers when Claude exits
-    (setq ghostel-kill-buffer-on-exit t))
-
-  ;; claude-code.el dependencies
-  (use-package inheritenv :ensure t)
+  ;; transient: required by magit and nix-mode.
   (use-package transient :ensure t)
-  
-  (use-package vterm :ensure t)
-  (setq vterm-max-scrollback 100000)
-
-  (use-package claude-code
-    :ensure t
-    :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-    :bind-keymap ("C-c c" . claude-code-command-map) ; Binds C-c c as the prefix key
-    :config
-    ;; Choose your terminal backend: 'vterm, 'eat, or 'ghostel
-    (setq claude-code-terminal-backend 'ghostel)
-
-    ;; (Optional) Swap RET and M-RET if you prefer standard Enter for typing newlines,
-    ;; and Alt-Enter to submit prompts to Claude.
-    ;; (setq claude-code-swap-return t)
-
-    ;; Enable standard Claude Code minor mode features globally
-    (claude-code-mode 1))
-
-  (with-eval-after-load 'claude-code
-  (require 'cl-generic)
-  
-  ;; Redefine the ghostel read-only check to support the new input-mode variables
-  (cl-defmethod claude-code--term-in-read-only-p ((backend (eql ghostel)))
-    "Compatibility patch for new ghostel input modes."
-    (cond
-     ;; If using the new ghostel (0.28.0+), check for copy/emacs states
-     ((boundp 'ghostel--input-mode)
-      (memq ghostel--input-mode '(copy emacs)))
-     ;; Fall back to the old variable if it is still defined
-     ((boundp 'ghostel--copy-mode-active)
-      ghostel--copy-mode-active)
-     ;; Safe default fallback to prevent crashes
-     (t nil))))
-
-  (use-package agent-shell :ensure t)
-  (setq agent-shell-session-restore-strategy 'full)
-
-  ;; (add-hook 'agent-shell-mode-hook #'agent-recall-track-sessions)
-
-  ;; (use-package agent-recall
-  ;;   :ensure t
-  ;;   :after agent-shell
-  ;;   :config (setq agent-recall-search-paths '("~/clojure")))
 
   (use-package plz :ensure t)
 
