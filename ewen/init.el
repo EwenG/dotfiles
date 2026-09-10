@@ -1,6 +1,6 @@
 ;;; init.el ---   -*- lexical-binding: t; -*-
 
-(toggle-debug-on-error)
+(setq debug-on-error t)
 
 (setq gc-cons-threshold 3500000)
 
