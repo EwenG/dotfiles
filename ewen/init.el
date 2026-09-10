@@ -246,13 +246,6 @@
 ;; Default web browser
 (setq browse-url-browser-function 'browse-url-chromium)
 
-(defun ewen/counsel-ag-in-directory ()
-  (interactive)
-  (let ((d (read-directory-name (concat
-                                 (car counsel-ag-base-command)
-                                 " in directory: "))))
-    (counsel-ag nil d)))
-
 ;; Fonts
 
 ;; (set-face-attribute 'default nil
@@ -288,7 +281,7 @@
 (global-set-key (kbd "C-s") 'swiper)
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "C-c f") 'ewen/counsel-ag-in-directory)
+(global-set-key (kbd "C-c f") 'counsel-ag)
 
 ;; Hybrid indexing is what makes the .projectile dirconfig take effect
 (setq projectile-indexing-method 'hybrid)
