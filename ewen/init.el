@@ -183,22 +183,33 @@
   :ensure t
   :commands (clang-format-buffer clang-format-region))
 
-(use-package dape :ensure t)
-
-(with-eval-after-load 'dape
-    ;; Launch a fresh Emacs under the debugger.
-    ;; (Never attach to your editing Emacs -- attaching stops the target,
-    ;;  which would freeze the very Emacs running dape.)
-    (add-to-list 'dape-configs
-      `(lldb-emacs
-        modes nil
-        ensure dape-ensure-command
-        command "/opt/homebrew/opt/llvm/bin/lldb-dap"
-        command-cwd ,(expand-file-name "~/clojure/tree-sitter-treejure")
-        :type "lldb-dap"
-        :request "launch"
-        :program "/Applications/Emacs.app/Contents/MacOS/Emacs-arm64-11"
-        :args [])))
+(use-package dape
+  :ensure t
+  ;; Not used day to day: `:defer t' keeps it off the startup path.  The
+  ;; config below is applied whenever dape is actually loaded (M-x dape).
+  :defer t
+  :config
+  ;; Debug a *fresh* Emacs under lldb.
+  ;;
+  ;; This is a launch config, not an attach one, on purpose: attaching to the
+  ;; Emacs you are editing in stops the target, which would freeze the very
+  ;; Emacs running dape.
+  ;;
+  (add-to-list 'dape-configs
+               '(lldb-emacs
+                 modes nil
+                 ensure dape-ensure-command
+                 ;; lldb-dap ships inside Homebrew's llvm and is not on PATH,
+                 ;; so fall back to the keg path when the lookup fails.
+                 command (or (executable-find "lldb-dap")
+                             "/opt/homebrew/opt/llvm/bin/lldb-dap")
+                 ;; Project root of whatever is being visited
+                 command-cwd dape-command-cwd
+                 :type "lldb-dap"
+                 :request "launch"
+                 ;; The Emacs binary actually running this session.
+                 :program (expand-file-name invocation-name invocation-directory)
+                 :args [])))
 
 (defun ewen/in-eval-expression-p ()
   (equal this-command 'eval-expression))
