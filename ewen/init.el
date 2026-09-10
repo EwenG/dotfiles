@@ -295,12 +295,8 @@
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 (global-set-key (kbd "C-c C-f") 'ewen/counsel-ag-in-directory)
 
-(add-hook 'projectile-mode-hook
-	  (lambda ()
-	    (setq projectile-completion-system 'ivy)
-      ;; Set to hybrid in order to enable the .projectile file
-      ;; (when the value is alien, .projectile is ignored)
-      (setq projectile-indexing-method 'hybrid)))
+;; Hybrid indexing is what makes the .projectile dirconfig take effect
+(setq projectile-indexing-method 'hybrid)
 
 ;; `project-switch-project' reads project.el's OWN remembered-project list
 ;; (`project-list-file'), which is separate from projectile's known-projects.
