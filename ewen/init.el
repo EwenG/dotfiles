@@ -20,7 +20,17 @@
       kept-old-versions 0   ;; Number of oldest versions to keep.
       delete-old-versions t ;; Don't ask to delete excess backup versions.
       backup-by-copying t)  ;; Copy all files, don't rename them.
-(setq vc-make-backup-files t) ;; Backup versioned files
+
+(defun ewen/backup-enable-predicate (name)
+  "Back up NAME unless it is regenerable or large.
+Logs and build output under a repo are ignored by git for the same reason
+they are not worth backing up."
+  (and (normal-backup-enable-predicate name)
+       (not (string-match-p "\\.\\(logs?\\)\\'" name))
+       (not (string-match-p "/\\(target\\|node_modules\\|\\.shadow-cljs\\)/" name))
+       (< (or (file-attribute-size (file-attributes name)) 0)
+          (* 1 1024 1024))))
+(setq backup-enable-predicate #'ewen/backup-enable-predicate)
 
 ;; Default and per-save backups go here:
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup/per-save")))
