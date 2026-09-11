@@ -303,7 +303,8 @@ they are not worth backing up."
 ;; `project-switch-project' reads project.el's OWN remembered-project list
 ;; (`project-list-file'), which is separate from projectile's known-projects.
 (with-eval-after-load 'project
-  (define-key project-prefix-map "p" #'projectile-switch-project))
+  (define-key project-prefix-map "p" #'projectile-switch-project)
+  (define-key project-prefix-map "m" #'ghostel-project))
 
 ;; Smartparens config
 (global-set-key (kbd "C-M-f") 'sp-forward-sexp)
@@ -352,6 +353,54 @@ they are not worth backing up."
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
 
+;; Ghostel (terminal emulator) helpers
+
+(defun ewen/git-branch (dir)
+  "Return the git branch name for DIR, or nil when DIR is not in a repo.
+Reads .git/HEAD directly instead of shelling out, because this runs on every
+terminal title change.  Handles linked worktrees, where .git is a file holding
+\"gitdir: <path>\" rather than a directory."
+  (when-let* ((root (locate-dominating-file (or dir default-directory) ".git"))
+              (dotgit (expand-file-name ".git" root))
+              (gitdir (if (file-directory-p dotgit)
+                          dotgit
+                        (with-temp-buffer
+                          (insert-file-contents dotgit)
+                          (and (looking-at "gitdir: \\(.*\\)")
+                               (match-string 1)))))
+              (head (expand-file-name "HEAD" gitdir))
+              ((file-readable-p head)))
+    (with-temp-buffer
+      (insert-file-contents head)
+      (cond ((looking-at "ref: refs/heads/\\(.*\\)") (match-string 1))
+            ((looking-at "\\([0-9a-f]\\{7\\}\\)")    (match-string 1))))))
+
+(defun ewen/ghostel-buffer-name-by-branch (title)
+  "Name a ghostel buffer after its git branch, falling back to the directory.
+Called in the ghostel buffer with the OSC 2 TITLE, on a title change and on cd."
+  (if-let ((branch (ewen/git-branch default-directory)))
+      (format "*ghostel: %s*" branch)
+    (ghostel-buffer-name-by-directory title)))
+
+(defun ewen/claude ()
+  "Run Claude Code in a ghostel buffer for the current project.
+`ghostel-buffer-name-function' is disabled buffer-locally so the buffer keeps
+its own name rather than being renamed to match a shell terminal on the same
+branch."
+  (interactive)
+  (let* ((dir (or (ignore-errors (project-root (project-current)))
+                  default-directory))
+         (default-directory dir)
+         (name (or (ewen/git-branch dir)
+                   (file-name-nondirectory (directory-file-name dir))))
+         (buf (get-buffer-create (format "*claude: %s*" name))))
+    ;; Display before exec: `ghostel-exec' sizes the terminal to the buffer's
+    ;; window, falling back to 80x24 when the buffer is not on screen yet.
+    (pop-to-buffer buf)
+    (ghostel-exec buf "claude")
+    (with-current-buffer buf
+      (setq-local ghostel-buffer-name-function nil))))
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
@@ -390,6 +439,28 @@ they are not worth backing up."
   (use-package transient :ensure t)
 
   (use-package plz :ensure t)
+
+  ;; Terminal emulator, for running Claude Code inside Emacs.
+  (use-package ghostel
+    :ensure t
+    :defer t
+    :commands (ghostel ghostel-project ghostel-other ghostel-exec)
+    :bind ("C-x m" . ghostel)
+    :custom
+    (ghostel-buffer-name-function #'ewen/ghostel-buffer-name-by-branch)
+    (ghostel-max-scrollback (* 10 1024 1024))
+    ;; Keep the buffer after the process exits so the last output stays readable.
+    (ghostel-kill-buffer-on-exit nil)
+    :config
+    ;; The upstream default plus the window-navigation keys: semi-char mode
+    ;; sends everything else straight to the terminal.  `setopt' rather than
+    ;; `setq' because this defcustom's :set rebuilds the keymap -- and it lives
+    ;; here rather than in :custom because that :set loads ghostel, which would
+    ;; defeat :defer and warn about the module on every startup.
+    (setopt ghostel-keymap-exceptions
+            '("C-c" "C-x" "C-u" "C-h" "M-x" "M-:" "C-\\"
+              "C-S-<left>" "C-S-<right>" "C-S-<up>" "C-S-<down>" "M-o"))
+    (define-key ghostel-semi-char-mode-map (kbd "C-s") #'swiper))
 
   (use-package markdown-mode
     :ensure t

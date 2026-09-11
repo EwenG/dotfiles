@@ -7,12 +7,12 @@
  '(ediff-split-window-function 'split-window-horizontally)
  '(ediff-window-setup-function 'ediff-setup-windows-plain)
  '(package-selected-packages
-   '(catppuccin-theme clang-format clj-data clojure-mode
-                     clojure-ts-mode company counsel dape editorconfig
-                     elisp-slime-nav exec-path-from-shell gif-screencast gnuplot
-                     graphql-mode ivy js2-mode less-css-mode magit markdown-mode
-                     multiple-cursors nix-mode plz projectile replique sass-mode
-                     smartparens stylus-mode vdiff vlf))
+   '(catppuccin-theme clang-format clj-data clojure-mode clojure-ts-mode company
+                      counsel dape editorconfig elisp-slime-nav
+                      exec-path-from-shell ghostel gif-screencast gnuplot
+                      graphql-mode ivy js2-mode less-css-mode magit
+                      markdown-mode multiple-cursors nix-mode plz projectile
+                      replique sass-mode smartparens stylus-mode vdiff vlf))
  '(safe-local-variable-values
    '((replique-clojure-source-roots "src")
      (eval add-hook 'org-property-allowed-value-functions
