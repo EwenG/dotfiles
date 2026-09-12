@@ -431,7 +431,14 @@ branch."
   (use-package js2-mode         :ensure t :defer t)
   (use-package vlf              :ensure t :defer t) ; very large files
   (use-package swiper           :ensure t :defer t)
-  (use-package magit            :ensure t :defer t)
+  (use-package magit
+    :ensure t :defer t
+    ;; Reuse the selected window, so `C-x g' from a file does not split the
+    ;; frame .`magit-revision-mode 'derives from `magit-diff-mode', so commits
+    ;; still open beside the log, which is what keeps n/p browsing usable.
+    :custom
+    (magit-display-buffer-function
+     #'magit-display-buffer-same-window-except-diff-v1))
   (use-package multiple-cursors :ensure t :defer t)
   (use-package gif-screencast   :ensure t :defer t)
 
