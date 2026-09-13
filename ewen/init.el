@@ -357,50 +357,54 @@ they are not worth backing up."
 ;; Replique config
 (setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
+(defun ewen/git-worktrees (dir)
+  "Worktree directories of DIR's repository, or nil when DIR is not in one."
+  (let ((default-directory (file-name-as-directory (expand-file-name dir))))
+    (ignore-errors
+      (seq-keep (lambda (l)
+                  (and (string-prefix-p "worktree " l) (substring l 9)))
+                (process-lines "git" "worktree" "list" "--porcelain")))))
+
+;; Visit a symlink as itself, not as its target.
+(setq vc-follow-symlinks nil)
+
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
 
 ;; Ghostel (terminal emulator) helpers
 
-(defun ewen/git-branch (dir)
-  "Return the git branch name for DIR, or nil when DIR is not in a repo.
-Reads .git/HEAD directly instead of shelling out, because this runs on every
-terminal title change.  Handles linked worktrees, where .git is a file holding
-\"gitdir: <path>\" rather than a directory."
-  (when-let* ((root (locate-dominating-file (or dir default-directory) ".git"))
-              (dotgit (expand-file-name ".git" root))
-              (gitdir (if (file-directory-p dotgit)
-                          dotgit
-                        (with-temp-buffer
-                          (insert-file-contents dotgit)
-                          (and (looking-at "gitdir: \\(.*\\)")
-                               (match-string 1)))))
-              (head (expand-file-name "HEAD" gitdir))
-              ((file-readable-p head)))
-    (with-temp-buffer
-      (insert-file-contents head)
-      (cond ((looking-at "ref: refs/heads/\\(.*\\)") (match-string 1))
-            ((looking-at "\\([0-9a-f]\\{7\\}\\)")    (match-string 1))))))
-
-(defun ewen/ghostel-buffer-name-by-branch (title)
-  "Name a ghostel buffer after its git branch, falling back to the directory.
-Called in the ghostel buffer with the OSC 2 TITLE, on a title change and on cd."
-  (if-let ((branch (ewen/git-branch default-directory)))
-      (format "*ghostel: %s*" branch)
-    (ghostel-buffer-name-by-directory title)))
-
-(defun ewen/claude ()
-  "Run Claude Code in a ghostel buffer for the current project.
+(defun ewen/claude (&optional dir new)
+  "Run Claude Code in a ghostel buffer, in DIR.
+Interactively, prompt for the directory, completing over the worktrees of the
+current repo and defaulting to the project you are in.
 `ghostel-buffer-name-function' is disabled buffer-locally so the buffer keeps
-its own name rather than being renamed to match a shell terminal on the same
-branch."
-  (interactive)
-  (let* ((dir (or (ignore-errors (project-root (project-current)))
-                  default-directory))
-         (default-directory dir)
-         (name (or (ewen/git-branch dir)
-                   (file-name-nondirectory (directory-file-name dir))))
-         (buf (get-buffer-create (format "*claude: %s*" name))))
+its own name rather than being renamed to match a shell terminal in the same
+directory."
+  (interactive
+   (let* ((here (directory-file-name
+                 (expand-file-name
+                  (or (ignore-errors (project-root (project-current)))
+                      default-directory))))
+          (cands (or (ewen/git-worktrees here) (list here))))
+     (list (completing-read (format "Start Claude in (default %s): "
+                                    (file-name-nondirectory here))
+                            cands nil nil nil nil here)
+           current-prefix-arg)))
+  (let* ((dir (directory-file-name
+               (expand-file-name
+                (or dir (ignore-errors (project-root (project-current)))
+                    default-directory))))
+         (default-directory (file-name-as-directory dir))
+         (label (abbreviate-file-name dir))
+         (name (format "*claude: %s*" label))
+         (existing (get-buffer name))
+         ;; A second session in the same directory gets its own buffer rather
+         ;; than being exec'd on top of a running one.  `generate-new-buffer'
+         ;; gives "*claude: DIR*<2>".  A buffer whose process has exited is
+         ;; reused, since `ghostel-kill-buffer-on-exit' is nil and those linger.
+         (buf (if (or new (and existing (get-buffer-process existing)))
+                  (generate-new-buffer name)
+                (or existing (get-buffer-create name)))))
     ;; Display before exec: `ghostel-exec' sizes the terminal to the buffer's
     ;; window, falling back to 80x24 when the buffer is not on screen yet.
     (pop-to-buffer buf)
@@ -469,7 +473,7 @@ branch."
     :commands (ghostel ghostel-project ghostel-other ghostel-exec)
     :bind ("C-x m" . ghostel)
     :custom
-    (ghostel-buffer-name-function #'ewen/ghostel-buffer-name-by-branch)
+    (ghostel-buffer-name-function #'ghostel-buffer-name-by-directory)
     (ghostel-max-scrollback (* 10 1024 1024))
     ;; Keep the buffer after the process exits so the last output stays readable.
     (ghostel-kill-buffer-on-exit nil)
