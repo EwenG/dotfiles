@@ -368,6 +368,28 @@ they are not worth backing up."
 ;; Visit a symlink as itself, not as its target.
 (setq vc-follow-symlinks nil)
 
+;; Merge conflicts.  ~/.gitconfig sets merge.conflictStyle to zdiff3, so a
+;; conflict carries the merge base between its two sides.  Everything below
+;; needs that base: without it `ediff-show-clashes-only' has nothing to compare
+;; against and `smerge-resolve' loses its diff3 shortcut.
+
+;; Buffer C starts as our side, not as both sides wrapped in combination
+;; markers, which is what `combined' -- the default -- produces.
+(setq ediff-default-variant 'default-A)
+
+;; n/p then stop only where both sides changed; regions where one side matches
+;; the base are already merged correctly in C.
+(setq-default ediff-show-clashes-only t)
+
+(defun ewen/smerge-maybe ()
+  "Turn on `smerge-mode' and go to the first conflict, if the file has any."
+  (when (save-excursion
+          (goto-char (point-min))
+          (re-search-forward "^<<<<<<< " nil t))
+    (smerge-start-session)))
+
+(add-hook 'find-file-hook #'ewen/smerge-maybe)
+
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
 
