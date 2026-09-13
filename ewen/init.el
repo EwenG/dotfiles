@@ -297,14 +297,21 @@ they are not worth backing up."
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 (global-set-key (kbd "C-c f") 'counsel-ag)
 
-;; Hybrid indexing is what makes the .projectile dirconfig take effect
-(setq projectile-indexing-method 'hybrid)
+(defun ewen/project-magit-status ()
+  "Show the Magit status of the current project."
+  (interactive)
+  (let ((default-directory (project-root (project-current t))))
+    (call-interactively #'magit-status)))
 
-;; `project-switch-project' reads project.el's OWN remembered-project list
-;; (`project-list-file'), which is separate from projectile's known-projects.
 (with-eval-after-load 'project
-  (define-key project-prefix-map "p" #'projectile-switch-project)
-  (define-key project-prefix-map "m" #'ghostel-project))
+  (define-key project-prefix-map "m" #'ghostel-project)
+  (setq project-switch-commands
+        '((ewen/project-magit-status "Magit" ?m)
+          (project-find-file "Find file" ?f)
+          (project-find-regexp "Find regexp" ?g)
+          (project-switch-to-buffer "Buffer" ?b)
+          (project-dired "Dired" ?d)
+          (ghostel-project "Ghostel" ?t))))
 
 ;; Smartparens config
 (global-set-key (kbd "C-M-f") 'sp-forward-sexp)
@@ -439,6 +446,14 @@ branch."
     :custom
     (magit-display-buffer-function
      #'magit-display-buffer-same-window-except-diff-v1))
+  ;; Git changes in the fringe.
+  (use-package diff-hl
+    :ensure t
+    :hook ((prog-mode . diff-hl-mode)
+           (magit-post-refresh . diff-hl-magit-post-refresh))
+    :config
+    (diff-hl-flydiff-mode 1))
+
   (use-package multiple-cursors :ensure t :defer t)
   (use-package gif-screencast   :ensure t :defer t)
 
@@ -475,10 +490,6 @@ branch."
     :init (setq markdown-command "multimarkdown")
     :bind (:map markdown-mode-map
                 ("C-c C-e" . markdown-do)))
-
-  (use-package projectile
-    :ensure t
-    :config (projectile-mode 1))
 
   (use-package smartparens
     :ensure t
