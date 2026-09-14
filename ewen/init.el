@@ -471,7 +471,8 @@ directory."
     ;; still open beside the log, which is what keeps n/p browsing usable.
     :custom
     (magit-display-buffer-function
-     #'magit-display-buffer-same-window-except-diff-v1))
+     #'magit-display-buffer-same-window-except-diff-v1)
+    (magit-ediff-dwim-show-on-hunks t))
   ;; Git changes in the fringe.
   (use-package diff-hl
     :ensure t
