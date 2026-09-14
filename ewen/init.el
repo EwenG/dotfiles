@@ -381,6 +381,49 @@ they are not worth backing up."
 ;; the base are already merged correctly in C.
 (setq-default ediff-show-clashes-only t)
 
+;; `diff-hl-ediff-current-hunk' fabricates the reference buffer and hands it to
+;; `ediff-buffers', so ediff cannot tell it from a buffer we opened ourselves
+;; and `ediff-keep-variants' leaves it behind on quit.  Nobody owns it, hence
+;; the marker.  `ediff-cleanup-hook' runs in the control buffer while
+;; ediff-buffer-A/B are still readable, and `ediff-janitor' skips dead buffers.
+(defvar-local ewen/diff-hl-ediff-reference nil
+  "Non-nil in the throwaway buffer diff-hl builds for Ediff.")
+
+(define-advice diff-hl--ediff-reference-buffer
+    (:filter-return (buf) ewen/mark-reference)
+  (when (buffer-live-p buf)
+    (with-current-buffer buf (setq ewen/diff-hl-ediff-reference t)))
+  buf)
+
+(defun ewen/diff-hl-ediff-kill-reference ()
+  "Kill the buffer diff-hl built for the Ediff session being quit."
+  (dolist (buf (list ediff-buffer-A ediff-buffer-B))
+    (when (and (buffer-live-p buf)
+               (buffer-local-value 'ewen/diff-hl-ediff-reference buf)
+               (not (buffer-modified-p buf)))
+      (kill-buffer buf))))
+
+(add-hook 'ediff-cleanup-hook #'ewen/diff-hl-ediff-kill-reference)
+
+;; Ediff never restores the pre-session layout: `ediff-cleanup-mess' re-displays
+;; A and B side by side and balances the windows.  Killing the reference buffer
+;; above makes that show the file twice, but the layout was wrong either way.
+;; Magit's sessions bind `ediff-quit-hook' buffer-locally and restore their own
+;; winconf, so this only ever fires for diff-hl and plain ediff.
+(defvar ewen/ediff-window-config nil)
+
+(defun ewen/ediff-save-window-config ()
+  (setq ewen/ediff-window-config (current-window-configuration)))
+
+(defun ewen/ediff-restore-window-config ()
+  (when (window-configuration-p ewen/ediff-window-config)
+    (set-window-configuration ewen/ediff-window-config)
+    (setq ewen/ediff-window-config nil)))
+
+(add-hook 'ediff-before-setup-hook #'ewen/ediff-save-window-config)
+;; Appended: `ediff-cleanup-mess' is on this hook too, and must run first.
+(add-hook 'ediff-quit-hook #'ewen/ediff-restore-window-config t)
+
 (defun ewen/smerge-maybe ()
   "Turn on `smerge-mode' and go to the first conflict, if the file has any."
   (when (save-excursion
