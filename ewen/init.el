@@ -477,6 +477,174 @@ directory."
     (with-current-buffer buf
       (setq-local ghostel-buffer-name-function nil))))
 
+(defun ewen/claude-session-p (buffer)
+  "Non-nil when BUFFER is a Claude ghostel session with a running process.
+`ghostel-kill-buffer-on-exit' is nil, so finished sessions linger; requiring
+a live process keeps those out."
+  (and (string-prefix-p "*claude: " (buffer-name buffer))
+       (process-live-p (get-buffer-process buffer))))
+
+(defun ewen/claude-sessions ()
+  "Every live Claude session."
+  (seq-filter #'ewen/claude-session-p (buffer-list)))
+
+(defun ewen/claude-buffers-for (dir)
+  "Live Claude sessions running in DIR.
+Matches by prefix so the \"<2>\" of a second session in the same directory
+is included."
+  (let ((name (format "*claude: %s*"
+                      (abbreviate-file-name (directory-file-name dir)))))
+    (seq-filter (lambda (b) (string-prefix-p name (buffer-name b)))
+                (ewen/claude-sessions))))
+
+(defun ewen/claude--visible-sessions ()
+  "Live Claude sessions on screen, the most recently used window first."
+  (let (bufs)
+    (dolist (w (sort (window-list nil 'never)
+                     (lambda (a b) (> (window-use-time a) (window-use-time b)))))
+      (let ((b (window-buffer w)))
+        (when (and (ewen/claude-session-p b) (not (memq b bufs)))
+          (push b bufs))))
+    (nreverse bufs)))
+
+(defun ewen/claude--pick (bufs)
+  "The single session in BUFS, or one chosen from several, or nil for none."
+  (cond ((null bufs) nil)
+        ((null (cdr bufs)) (car bufs))
+        (t (get-buffer (completing-read "Claude session: "
+                                        (mapcar #'buffer-name bufs) nil t)))))
+
+(defun ewen/claude--start (dir)
+  "Offer to start Claude in DIR, then abort: it is not ready to be pasted into."
+  (if (y-or-n-p (format "No Claude session.  Start one in %s? "
+                        (abbreviate-file-name dir)))
+      (progn (ewen/claude dir)
+             (user-error "Claude is starting -- send again once it is ready"))
+    (user-error "No Claude session")))
+
+(defun ewen/claude--session (dir)
+  "The Claude session to send to, preferring DIR's.
+A session on screen wins, since that is the one being watched: among several
+the one for DIR, else the most recently used window.  With none on screen,
+fall back to DIR's sessions, then to any session at all."
+  (let* ((visible (ewen/claude--visible-sessions))
+         (here (ewen/claude-buffers-for dir)))
+    (or (and visible (or (car (seq-intersection visible here)) (car visible)))
+        (ewen/claude--pick here)
+        (ewen/claude--pick (ewen/claude-sessions))
+        (ewen/claude--start dir))))
+
+(defun ewen/claude--file ()
+  "The file this buffer visits, following an indirect buffer to its base."
+  (or buffer-file-name
+      (and-let* ((base (buffer-base-buffer)))
+        (buffer-file-name base))))
+
+(defun ewen/claude--targets ()
+  "Paths to reference: the Dired selection, or the file this buffer visits.
+In Dired with nothing marked this is the entry at point, and on a line that
+names no entry it is the directory being listed."
+  (or (and (derived-mode-p 'dired-mode)
+           (or (ignore-errors (dired-get-marked-files))
+               (list default-directory)))
+      (and-let* ((f (ewen/claude--file))) (list f))
+      (user-error "Nothing here to reference")))
+
+(defun ewen/claude--project-dir (fallback)
+  "This buffer's project root, or the directory holding FALLBACK."
+  (or (ignore-errors (project-root (project-current)))
+      (file-name-directory (directory-file-name fallback))))
+
+(defun ewen/claude--relative (path root)
+  "PATH relative to ROOT, or absolute when it lies outside ROOT.
+The chosen session may belong to another project, and a \"..\" path out of
+its working directory is not something Claude can resolve."
+  (let* ((abs (directory-file-name (expand-file-name path)))
+         (rel (if (file-equal-p abs root) "." (file-relative-name abs root))))
+    (if (string-prefix-p ".." rel) abs rel)))
+
+(defun ewen/claude--ref (path root)
+  "PATH as an @-reference relative to ROOT, directories keeping a trailing /."
+  (concat "@" (ewen/claude--relative path root)
+          (and (file-directory-p path) "/")))
+
+(defun ewen/claude--fence-language ()
+  "Markdown info string for the current major mode, or the empty string."
+  (let ((name (replace-regexp-in-string "\\(-ts\\)?-mode\\'" ""
+                                        (symbol-name major-mode))))
+    (pcase name
+      ((or "emacs-lisp" "lisp-interaction") "elisp")
+      ("sh" "bash")
+      ("fundamental" "")
+      (_ name))))
+
+(defun ewen/claude--fence (text)
+  "A backtick fence one longer than the longest run of backticks in TEXT."
+  (let ((longest 0) (pos 0))
+    (while (string-match "`+" text pos)
+      (setq longest (max longest (- (match-end 0) (match-beginning 0)))
+            pos (match-end 0)))
+    (make-string (max 3 (1+ longest)) ?`)))
+
+(defun ewen/claude-reference-file (&optional submit)
+  "Insert @-references to this buffer's file, or the Dired selection, into a
+Claude session.  Directories are referenced as such.
+With a prefix argument SUBMIT, also send RET.  Paths are relative to the
+session's own working directory, not to this buffer's project."
+  (interactive "P")
+  (let* ((targets (ewen/claude--targets))
+         (buf (ewen/claude--session (ewen/claude--project-dir (car targets))))
+         (root (buffer-local-value 'default-directory buf))
+         (refs (mapconcat (lambda (f) (ewen/claude--ref f root)) targets " ")))
+    ;; Bracketed paste, not `ghostel-send-string': typing "@" character by
+    ;; character opens Claude's file picker, which then eats the path.
+    (with-current-buffer buf
+      (ghostel-paste-string (concat refs " "))
+      (when submit (ghostel-send-key "return")))
+    (message "%s -> %s" refs (buffer-name buf))))
+
+(defun ewen/claude-send-region (beg end &optional submit)
+  "Send the region BEG..END to a Claude session as a fenced quote.
+The block is headed with \"path:first-last\" so Claude can locate the lines.
+With a prefix argument SUBMIT, also send RET."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end) current-prefix-arg)
+     (user-error "No active region")))
+  (let* ((file (ewen/claude--file))
+         (buf (ewen/claude--session
+               (ewen/claude--project-dir (or file default-directory))))
+         (root (buffer-local-value 'default-directory buf))
+         (text (buffer-substring-no-properties beg end))
+         ;; A line-wise selection ends at the start of the line after the last
+         ;; one it shows; naming that line would be off by one.
+         (last (line-number-at-pos (if (and (> end beg)
+                                            (= end (save-excursion
+                                                     (goto-char end)
+                                                     (line-beginning-position))))
+                                       (1- end)
+                                     end)))
+         (header (format "%s:%d-%d"
+                         (if file (ewen/claude--relative file root) (buffer-name))
+                         (line-number-at-pos beg) last))
+         (fence (ewen/claude--fence text))
+         (block (format "%s\n%s%s\n%s\n%s\n"
+                        header fence (ewen/claude--fence-language)
+                        (replace-regexp-in-string "\n\\'" "" text)
+                        fence)))
+    ;; Bracketed paste is required, not merely safer: a typed newline would
+    ;; submit the prompt instead of continuing the block.
+    (with-current-buffer buf
+      (ghostel-paste-string block)
+      (when submit (ghostel-send-key "return")))
+    (message "%s -> %s" header (buffer-name buf))))
+
+(global-set-key (kbd "C-c @") #'ewen/claude-reference-file)
+;; Both spellings: a terminal delivers C-SPC as C-@, a GUI frame as its own
+;; event, and `kbd' does not fold the two together.
+(global-set-key (kbd "C-c C-@") #'ewen/claude-send-region)
+(global-set-key (kbd "C-c C-SPC") #'ewen/claude-send-region)
+
 (require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
