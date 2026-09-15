@@ -86,9 +86,6 @@ they are not worth backing up."
 ;; `windmove-mode-map', a MINOR-mode map, so it would override org-mode's own
 ;; S-<arrow> (todo state, priority, timestamp) rather than losing to it.
 (windmove-default-keybindings '(control shift))
-;; Shorter than the `C-x O' this is bound to by default.
-(define-key global-map (kbd "M-o") #'other-window-backward)
-
 ;;NixOS shell prompt is not recognized by default. This pattern fix the issue.
 (setq tramp-shell-prompt-pattern "\\(?:^\\|\r\\)[^]#$%>\n]*#?[]#$%>].* *\\(^[\\[[0-9;]*[a-zA-Z] *\\)*")
 
@@ -715,7 +712,7 @@ With a prefix argument SUBMIT, also send RET."
     ;; defeat :defer and warn about the module on every startup.
     (setopt ghostel-keymap-exceptions
             '("C-c" "C-x" "C-u" "C-h" "M-x" "M-:" "C-\\"
-              "C-S-<left>" "C-S-<right>" "C-S-<up>" "C-S-<down>" "M-o"))
+              "C-S-<left>" "C-S-<right>" "C-S-<up>" "C-S-<down>"))
     (define-key ghostel-semi-char-mode-map (kbd "C-s") #'swiper))
 
   (use-package markdown-mode
