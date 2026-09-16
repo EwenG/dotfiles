@@ -2,7 +2,10 @@
 
 (setq debug-on-error t)
 
-(setq gc-cons-threshold 3500000)
+;; A GC pause is proportional to the live heap, so scale the interval with the
+;; heap too -- a fixed `gc-cons-threshold' makes GC cost more as the session
+;; grows.  1.0 measured ~43MiB between GCs on a 21MiB heap.
+(setq gc-cons-percentage 1.0)
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
