@@ -778,4 +778,30 @@ With a prefix argument SUBMIT, also send RET."
   (set-face-attribute 'font-lock-comment-delimiter-face nil :weight 'bold)
   (set-face-attribute 'comint-highlight-prompt nil :weight 'bold)
 
+  ;; Catppuccin latte paints both mode lines in near-identical greys, so the
+  ;; boundary between stacked windows disappears. Darken the active one and
+  ;; rule both top and bottom.
+  (let ((rule (catppuccin-color 'overlay0)))
+    (set-face-attribute 'mode-line nil
+                        :background (catppuccin-color 'surface1)
+                        :foreground (catppuccin-color 'text)
+                        :overline rule :underline rule :box nil)
+    (set-face-attribute 'mode-line-inactive nil
+                        :background (catppuccin-color 'mantle)
+                        :foreground (catppuccin-color 'subtext0)
+                        :overline rule :underline rule :box nil))
+  ;; Keep the underline on the mode line's last pixel row instead of eating
+  ;; into the text.
+  (setq x-underline-at-descent-line t)
+
+  ;; Side-by-side splits are separated by a 1px vertical border, not by a mode
+  ;; line. Replace it with a wider, darker window divider.
+  (setq window-divider-default-places 'right-only)
+  (setq window-divider-default-right-width 3)
+  (window-divider-mode 1)
+  (let ((rule (catppuccin-color 'overlay0)))
+    (set-face-attribute 'window-divider nil :foreground rule)
+    (set-face-attribute 'window-divider-first-pixel nil :foreground rule)
+    (set-face-attribute 'window-divider-last-pixel nil :foreground rule))
+
   )
