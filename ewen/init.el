@@ -704,6 +704,8 @@ With a prefix argument SUBMIT, also send RET."
     (ghostel-max-scrollback (* 10 1024 1024))
     ;; Keep the buffer after the process exits so the last output stays readable.
     (ghostel-kill-buffer-on-exit nil)
+    ;; The libghostty probe runs on every redraw; it was 5.7% of Emacs CPU.
+    (ghostel-detect-password-prompts nil)
     :config
     ;; The upstream default plus the window-navigation keys: semi-char mode
     ;; sends everything else straight to the terminal.  `setopt' rather than
