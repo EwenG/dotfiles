@@ -299,6 +299,28 @@ they are not worth backing up."
   (let ((default-directory (project-root (project-current t))))
     (call-interactively #'magit-status)))
 
+(defun ewen/magit-kill-buffers (&optional all-repos)
+  "Kill this repository's Magit buffers, except its status buffer.
+With prefix ALL-REPOS, do it for every repository.  Process
+buffers with a live process are spared."
+  (interactive "P")
+  ;; `magit--default-directory' is how Magit itself tags a buffer with its
+  ;; repository; it is permanent-local, so a let-bound `default-directory'
+  ;; cannot make a buffer look like it belongs elsewhere.
+  (let ((topdir (unless all-repos
+                  (or (magit-toplevel)
+                      (user-error "Not inside a Git repository"))))
+        (killed 0))
+    (dolist (buf (buffer-list))
+      (when (with-current-buffer buf
+              (and (derived-mode-p 'magit-mode)
+                   (not (derived-mode-p 'magit-status-mode))
+                   (not (get-buffer-process buf))
+                   (or all-repos (equal magit--default-directory topdir))))
+        (kill-buffer buf)
+        (setq killed (1+ killed))))
+    (message "Killed %d Magit buffer%s" killed (if (= killed 1) "" "s"))))
+
 (with-eval-after-load 'project
   (define-key project-prefix-map "m" #'ghostel-project)
   (setq project-switch-commands
@@ -679,7 +701,9 @@ With a prefix argument SUBMIT, also send RET."
     :custom
     (magit-display-buffer-function
      #'magit-display-buffer-same-window-except-diff-v1)
-    (magit-ediff-dwim-show-on-hunks t))
+    (magit-ediff-dwim-show-on-hunks t)
+    :bind (:map magit-mode-map
+                ("C-c C-k" . ewen/magit-kill-buffers)))
   ;; Git changes in the fringe.
   (use-package diff-hl
     :ensure t
