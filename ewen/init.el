@@ -375,6 +375,15 @@ buffers with a live process are spared."
 ;; Replique config
 (setq replique/replique-coords (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique")))
 
+;; Replique 2 spells the same setting `replique-coordinates', and it defaults to
+;; nil rather than to a path: no coordinate works on another machine until
+;; replique 2 is published, so the checkout is named here rather than shipped as
+;; a default.  Set before the package loads, which is where the value survives:
+;; `defcustom' leaves a variable that already has one alone.
+(setq replique-coordinates
+      (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique-2")))
+
+
 (defun ewen/git-worktrees (dir)
   "Worktree directories of DIR's repository, or nil when DIR is not in one."
   (let ((default-directory (file-name-as-directory (expand-file-name dir))))
