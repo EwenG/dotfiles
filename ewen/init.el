@@ -733,6 +733,9 @@ With a prefix argument SUBMIT, also send RET."
     (ghostel-kill-buffer-on-exit nil)
     ;; The libghostty probe runs on every redraw; it was 5.7% of Emacs CPU.
     (ghostel-detect-password-prompts nil)
+    ;; 20fps rather than 30: every redraw is a redisplay, and that allocation
+    ;; churn fragments the malloc zone over a long session (emacs bug#79023).
+    (ghostel-timer-delay 0.05)
     :config
     ;; The upstream default plus the window-navigation keys: semi-char mode
     ;; sends everything else straight to the terminal.  `setopt' rather than
