@@ -158,6 +158,10 @@ they are not worth backing up."
           (lambda ()
             (company-mode 1)))
 
+(add-hook 'replique-repl-mode-hook
+          (lambda ()
+            (company-mode 1)))
+
 (add-hook 'replique/mode-hook
           (lambda ()
             (company-mode 1)
@@ -383,6 +387,9 @@ buffers with a live process are spared."
 (setq replique-coordinates
       (format "{:local/root \"%s\"}" (expand-file-name "~/clojure/replique-2")))
 
+(setq eldoc-echo-area-use-multiline-p 2
+      eldoc-echo-area-display-truncation-message nil
+      eldoc-echo-area-prefer-doc-buffer 'maybe)
 
 (defun ewen/git-worktrees (dir)
   "Worktree directories of DIR's repository, or nil when DIR is not in one."
