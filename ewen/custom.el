@@ -13,8 +13,8 @@
                       counsel dape diff-hl editorconfig elisp-slime-nav
                       exec-path-from-shell ghostel gif-screencast gnuplot
                       graphql-mode ivy js2-mode less-css-mode magit
-                      markdown-mode multiple-cursors nix-mode plz
-                      replique sass-mode smartparens stylus-mode vdiff vlf))
+                      markdown-mode multiple-cursors nix-mode plz replique
+                      sass-mode smartparens stylus-mode vdiff vlf))
  '(safe-local-variable-values
    '((replique-clojure-source-roots "src")
      (eval add-hook 'org-property-allowed-value-functions
