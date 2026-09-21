@@ -470,25 +470,26 @@ buffers with a live process are spared."
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
 
-;; Ghostel (terminal emulator) helpers
+(defun ewen/claude--read-dir (prompt default)
+  "Read a directory named by PROMPT, completing over DEFAULT's worktrees."
+  (let* ((default (directory-file-name (expand-file-name default)))
+         (cands (or (ewen/git-worktrees default) (list default))))
+    (completing-read (format "%s (default %s): "
+                             prompt (file-name-nondirectory default))
+                     cands nil nil nil nil default)))
 
-(defun ewen/claude (&optional dir new)
-  "Run Claude Code in a ghostel buffer, in DIR.
+(defun ewen/claude (&optional dir new args)
+  "Run Claude Code in a ghostel buffer, in DIR, passing ARGS to the CLI.
 Interactively, prompt for the directory, completing over the worktrees of the
 current repo and defaulting to the project you are in.
 `ghostel-buffer-name-function' is disabled buffer-locally so the buffer keeps
 its own name rather than being renamed to match a shell terminal in the same
 directory."
   (interactive
-   (let* ((here (directory-file-name
-                 (expand-file-name
-                  (or (ignore-errors (project-root (project-current)))
-                      default-directory))))
-          (cands (or (ewen/git-worktrees here) (list here))))
-     (list (completing-read (format "Start Claude in (default %s): "
-                                    (file-name-nondirectory here))
-                            cands nil nil nil nil here)
-           current-prefix-arg)))
+   (list (ewen/claude--read-dir
+          "Start Claude in"
+          (or (ignore-errors (project-root (project-current))) default-directory))
+         current-prefix-arg))
   (let* ((dir (directory-file-name
                (expand-file-name
                 (or dir (ignore-errors (project-root (project-current)))
@@ -507,9 +508,87 @@ directory."
     ;; Display before exec: `ghostel-exec' sizes the terminal to the buffer's
     ;; window, falling back to 80x24 when the buffer is not on screen yet.
     (pop-to-buffer buf)
-    (ghostel-exec buf "claude")
+    (ghostel-exec buf "claude" args)
     (with-current-buffer buf
       (setq-local ghostel-buffer-name-function nil))))
+
+(defconst ewen/claude-projects-dir (expand-file-name "~/.claude/projects/")
+  "Where Claude Code keeps its transcripts, one directory per working directory.")
+
+(defun ewen/claude--transcript (id)
+  "The transcript file of session ID, wherever it was recorded, or nil.
+Session ids are unique across projects, so a glob over every project
+directory finds the one that holds it."
+  (car (file-expand-wildcards
+        (expand-file-name (concat "*/" id ".jsonl") ewen/claude-projects-dir))))
+
+(defun ewen/claude--transcript-cwd (file)
+  "The directory the session recorded in FILE ran in, or nil.
+Read out of the transcript rather than taken from the name of the project
+directory holding it: that name mangles every slash to a dash, so
+~/clojure/nosco-gamma-1 and the worktree nosco-gamma/1 share one spelling and
+neither can be turned back into a path.  Only the head of the file is read --
+the first rows are bookkeeping, the working directory arrives with the first
+message -- and the truncated last line simply fails to parse."
+  (with-temp-buffer
+    (insert-file-contents file nil 0 200000)
+    (goto-char (point-min))
+    (catch 'found
+      (while (not (eobp))
+        (when-let* ((row (ignore-errors
+                           (json-parse-string
+                            (buffer-substring-no-properties
+                             (line-beginning-position) (line-end-position))
+                            :object-type 'alist)))
+                    (cwd (alist-get 'cwd row)))
+          (throw 'found cwd))
+        (forward-line 1))
+      nil)))
+
+(defun ewen/claude--read-session-id ()
+  "Read a session id, offering one sitting on the kill ring as the default."
+  (let* ((killed (ignore-errors (current-kill 0 t)))
+         (default (and killed
+                       (string-match
+                        "[0-9a-f]\\{8\\}\\(-[0-9a-f]\\{4\\}\\)\\{3\\}-[0-9a-f]\\{12\\}"
+                        killed)
+                       (match-string 0 killed))))
+    (string-trim (read-string (if default
+                                  (format "Session id (default %s): " default)
+                                "Session id: ")
+                              nil nil default))))
+
+(defun ewen/claude-resume (id &optional dir)
+  "Resume the Claude Code session ID in DIR, which defaults to its own one.
+Interactively, read the id -- a session id on the kill ring is offered as the
+default -- then the directory, completing over the worktrees of the repo the
+session ran in.
+
+In its own directory the session simply continues.  Anywhere else it is
+resumed from the transcript\'s path and forked.  Both are needed: \"claude
+--resume ID\" only searches the transcripts recorded for the directory it is
+started in, and resuming the path alone would keep the original id, which
+Claude Code refuses to resume while that session is live and whose transcript
+stays filed under the old directory.  The fork replays the conversation into
+a new session, recorded under DIR, leaving the original untouched."
+  (interactive
+   (let* ((id (ewen/claude--read-session-id))
+          (file (or (ewen/claude--transcript id)
+                    (user-error "No transcript for session %s" id))))
+     (list id (ewen/claude--read-dir "Resume in"
+                                     (or (ewen/claude--transcript-cwd file)
+                                         default-directory)))))
+  (let* ((id (string-trim id))
+         (file (or (ewen/claude--transcript id)
+                   (user-error "No transcript for session %s" id)))
+         (origin (ewen/claude--transcript-cwd file))
+         (dir (directory-file-name
+               (expand-file-name (or dir origin default-directory)))))
+    (unless (file-directory-p dir)
+      (user-error "No such directory: %s" dir))
+    (ewen/claude dir nil (if (and origin (file-equal-p dir origin))
+                             (list "--resume" id)
+                           (list "--resume" file "--fork-session")))))
 
 (defun ewen/claude-session-p (buffer)
   "Non-nil when BUFFER is a Claude ghostel session with a running process.
