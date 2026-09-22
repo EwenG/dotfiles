@@ -467,6 +467,10 @@ buffers with a live process are spared."
 
 (add-hook 'find-file-hook #'ewen/smerge-maybe)
 
+(require 'wtlocal)
+(setq wtlocal-dirs (list (expand-file-name "~/clojure/nosco-local")))
+(wtlocal-mode 1)
+
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
 

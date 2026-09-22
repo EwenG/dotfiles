@@ -16,7 +16,9 @@
                       markdown-mode multiple-cursors nix-mode plz replique
                       sass-mode smartparens stylus-mode vdiff vlf))
  '(safe-local-variable-values
-   '((replique-clojure-source-roots "src")
+   '((replique-aliases "replique-clj" "jvm-opts" "dev" "cljs" "i18n" "kourou"
+                       "test")
+     (replique-clojure-source-roots "src")
      (eval add-hook 'org-property-allowed-value-functions
            (lambda (p)
              (when (equal p "BRANCH")
