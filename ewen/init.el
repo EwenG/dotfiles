@@ -327,6 +327,7 @@ buffers with a live process are spared."
 
 (with-eval-after-load 'project
   (define-key project-prefix-map "m" #'ghostel-project)
+  (setq project-vc-ignores '("**/.*/**"))
   (setq project-switch-commands
         '((ewen/project-magit-status "Magit" ?m)
           (project-find-file "Find file" ?f)
