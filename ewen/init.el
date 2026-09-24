@@ -7,6 +7,9 @@
 ;; grows.  1.0 measured ~43MiB between GCs on a 21MiB heap.
 (setq gc-cons-percentage 1.0)
 
+;; Early, so `comment' and the other utils are available below.
+(require 'ewen)
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 ;; Org-mode's repository
@@ -762,8 +765,6 @@ With a prefix argument SUBMIT, also send RET."
 ;; event, and `kbd' does not fold the two together.
 (global-set-key (kbd "C-c C-@") #'ewen/claude-send-region)
 (global-set-key (kbd "C-c C-SPC") #'ewen/claude-send-region)
-
-(require 'ewen)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
 

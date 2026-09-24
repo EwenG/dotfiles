@@ -2,6 +2,13 @@
 
 (require 'subr-x)
 
+(defmacro comment (&rest _body)
+  "Ignore BODY, like Clojure\\='s `comment'.
+For forms kept in a file to be run by hand: unlike a commented-out block,
+`C-x C-e' and `C-M-x' still reach the forms inside."
+  (declare (indent 0) (debug (&rest sexp)))
+  nil)
+
 (defun ewen/pid->process-buffer-name (pid)
   (let ((process-name (thread-last (string-to-number pid)
                         process-attributes
