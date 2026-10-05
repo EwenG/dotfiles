@@ -849,7 +849,7 @@ With a prefix argument SUBMIT, also send RET."
       :ensure t
       :config
       (exec-path-from-shell-initialize)
-      (dolist (var '("PATH" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "TRANSIFEX_API_TOKEN"))
+      (dolist (var '("PATH" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "OPENSEARCH_SYNC_ENABLED"))
         (exec-path-from-shell-copy-env var)))
     (setenv "QT_QPA_PLATFORM_PLUGIN_PATH" "/opt/homebrew/opt/qtbase/share/qt/plugins/platforms/")
     (setenv "LANG" "en_US.UTF-8")
