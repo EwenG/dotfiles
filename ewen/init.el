@@ -149,13 +149,14 @@ they are not worth backing up."
 
 
 ;;Enable replique-minor-mode
-(add-hook 'replique-clojure-mode-hook 'replique/minor-mode)
+;;(add-hook 'replique-clojure-mode-hook 'replique/minor-mode)
 
-(add-hook 'css-mode-hook (lambda ()
-                           (replique/minor-mode 1)
-                           (company-mode 1)))
+;; (add-hook 'css-mode-hook (lambda ()
+;;                            (replique/minor-mode 1)
+;;                            (company-mode 1)))
+(add-hook 'css-mode-hook #'replique-css-mode)
 (add-hook 'js2-mode-hook (lambda ()
-                           (replique/minor-mode 1)
+                           ;;(replique/minor-mode 1)
                            (company-mode 1)
                            ;; js2mode indent with 2 spaces
                            (setq js2-basic-offset 2)))
