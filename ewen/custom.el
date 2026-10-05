@@ -16,7 +16,11 @@
                       markdown-mode multiple-cursors nix-mode plz replique
                       sass-mode smartparens stylus-mode vdiff vlf))
  '(safe-local-variable-values
-   '((replique-aliases "replique-clj" "jvm-opts" "dev" "cljs" "i18n" "kourou"
+   '((replique-css-outputs "dev-resources/public/main/css/main.css")
+     (replique-css-entry . "scss/main.scss")
+     (replique-aliases "replique-clj" "jvm-opts" "dev" "cljs" "i18n" "kourou"
+                       "test" "cljs-fork")
+     (replique-aliases "replique-clj" "jvm-opts" "dev" "cljs" "i18n" "kourou"
                        "test")
      (replique-clojure-source-roots "src")
      (eval add-hook 'org-property-allowed-value-functions
