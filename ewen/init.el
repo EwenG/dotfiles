@@ -115,7 +115,8 @@ they are not worth backing up."
             (org-indent-mode t)
             (turn-on-auto-fill)
             ;; (setq visual-line-mode 1)
-            (require 'ob-replique)))
+            ;;(require 'ob-replique)
+            ))
 
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-<left>") #'org-metaleft)
@@ -124,7 +125,8 @@ they are not worth backing up."
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
-     (gnuplot . t))))
+     (gnuplot . t)
+     (python . t))))
 
 (defun ewen/org-insert-results ()
   "Insert a `#+RESULTS:' marker followed by an empty result line."
