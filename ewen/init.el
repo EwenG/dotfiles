@@ -484,9 +484,66 @@ buffers with a live process are spared."
 
 (add-hook 'find-file-hook #'ewen/smerge-maybe)
 
+(defvar ewen/nosco-local (expand-file-name "~/clojure/nosco-local")
+  "Where nosco-gamma's personal dev files and its REPL stage are described.")
+
 (require 'wtlocal)
-(setq wtlocal-dirs (list (expand-file-name "~/clojure/nosco-local")))
+(setq wtlocal-dirs (list ewen/nosco-local))
 (wtlocal-mode 1)
+
+;; WHETHER roots.txt IS STILL THE TRUTH.  It is the one thing about the stage
+;; written down rather than read off the disk, and a deps.edn root it does not
+;; name is linked whole: the JVM freezes it where it pointed at start, and
+;; nothing else says so before the process reads the wrong branch.  The
+;; aliases decide the answer and are a directory local variable, hence asked
+;; of replique rather than of point.sh.
+
+(defun ewen/stage-unlisted-roots (worktree)
+  "The classpath roots WORKTREE declares that roots.txt does not name.
+One direction only: a root roots.txt names and deps.edn does not costs
+nothing to hold for real."
+  (let ((listed (with-temp-buffer
+                  (insert-file-contents (expand-file-name "roots.txt" ewen/nosco-local))
+                  (seq-remove (lambda (line) (string-prefix-p "#" line))
+                              (split-string (buffer-string) "\n" t "[ \t]+"))))
+        ;; Only values already known to be safe: a hook must not stop to ask
+        (enable-local-variables :safe))
+    (and (require 'replique-classpath nil t)
+         (seq-difference (replique-classpath-directories worktree) listed))))
+
+(add-hook 'wtlocal-after-point-hook
+          (lambda (worktree stage)
+            (when-let* ((unlisted (ewen/stage-unlisted-roots worktree)))
+              (display-warning
+               'wtlocal
+               (format (concat "%s declares classpath roots that roots.txt does "
+                               "not name:\n\n  %s\n\n"
+                               "Those are linked whole, so the JVM freezes them "
+                               "where they pointed when it started.  Add them to "
+                               "%s, point again, and restart the process.")
+                       (file-name-nondirectory (directory-file-name worktree))
+                       (string-join unlisted "\n  ")
+                       (expand-file-name "roots.txt" ewen/nosco-local))))
+            (when (require 'replique nil t)
+              (if-let* ((process (replique-process-in stage)))
+                  (replique-relinked process worktree wtlocal-pointed-from
+                                     (and wtlocal-pointed-from
+                                          (wtlocal-unchanged-files
+                                           wtlocal-pointed-from worktree)))
+                ;; A process started in a worktree reads that worktree whatever
+                ;; the stage points at
+                (when-let* ((elsewhere (replique-process-current)))
+                  (display-warning
+                   'wtlocal
+                   (format (concat "Nothing is running in %s, so nothing was "
+                                   "reloaded.  %s is running in %s instead - "
+                                   "kill it and M-x replique-connect in %s.")
+                           (abbreviate-file-name stage)
+                           (replique-process--id elsewhere)
+                           (abbreviate-file-name
+                            (directory-file-name
+                             (replique-process--directory elsewhere)))
+                           (abbreviate-file-name stage))))))))
 
 ;; Fix "inappropriate ioctl for device" when using gpg
 (setq epg-pinentry-mode 'loopback)
