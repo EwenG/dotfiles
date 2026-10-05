@@ -880,7 +880,10 @@ With a prefix argument SUBMIT, also send RET."
 
   (use-package ivy
     :ensure t
-    :config (ivy-mode 1))
+    :config
+    ;; Status buffers are named "magit: repo", the rest "magit-<mode>: repo".
+    (add-to-list 'ivy-ignore-buffers "\\`magit-")
+    (ivy-mode 1))
 
   (use-package replique :ensure t)
 
