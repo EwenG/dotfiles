@@ -7,6 +7,16 @@
 ;; grows.  1.0 measured ~43MiB between GCs on a 21MiB heap.
 (setq gc-cons-percentage 1.0)
 
+;; libgccjit's driver derives -mmacosx-version-min from the Darwin version
+;; (darwin27 -> 18.0), which clang rejects on macOS 27.  Naming the target is
+;; what the driver reads before it derives anything, so the wrong number is
+;; never computed rather than overridden by a later flag -- and it is the same
+;; knob replique.el's Makefile sets, for a batch run that reads no init.
+;; Bump it after a macOS upgrade.
+(when (and (eq system-type 'darwin)
+           (null (getenv "MACOSX_DEPLOYMENT_TARGET")))
+  (setenv "MACOSX_DEPLOYMENT_TARGET" "27.0"))
+
 ;; Early, so `comment' and the other utils are available below.
 (require 'ewen)
 
