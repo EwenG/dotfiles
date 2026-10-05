@@ -840,8 +840,8 @@ With a prefix argument SUBMIT, also send RET."
 
 (defun ewen-after-init-hook ()
   (add-to-list 'load-path "~/clj-data.el")
-  (add-to-list 'load-path "~/replique.el")
-  ;; (add-to-list 'load-path "~/replique.el-2")
+  ;;(add-to-list 'load-path "~/replique.el")
+  (add-to-list 'load-path "~/replique.el-2")
   (add-to-list 'load-path "~/strette.el")
 
   (when (memq window-system '(mac ns x))
