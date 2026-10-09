@@ -122,6 +122,9 @@ they are not worth backing up."
   (define-key org-mode-map (kbd "C-<left>") #'org-metaleft)
   (define-key org-mode-map (kbd "C-<right>") #'org-metaright)
   (setq org-confirm-babel-evaluate nil)
+  ;; Inline images are shrunk to `fill-column' (80 chars) by default, so a
+  ;; wide plot or graph shows small whatever size it was rendered at.
+  (setq org-image-max-width 'window)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -208,6 +211,25 @@ they are not worth backing up."
                               ;; static analysis inline
                               "--clang-tidy"))))
 (add-hook 'c-ts-mode-hook #'eglot-ensure)
+
+;; Python: eglot finds basedpyright (or pyright/pylsp) on PATH.  A uv project's
+;; .venv is picked up through pyproject.toml's [tool.basedpyright] venv keys.
+;; Tree-sitter Python mode.  Emacs ships the grammar's source pinned to a
+;; commit it supports, so `treesit-install-language-grammar' needs no recipe.
+(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
+
+(defun ewen/python-mode-setup ()
+  ;; `run-python' otherwise starts the python3 on PATH, which has none of the
+  ;; project's packages.  The venv's bin goes first on the shell's exec-path.
+  (when-let* ((root (locate-dominating-file default-directory ".venv")))
+    (setq-local python-shell-virtualenv-root (expand-file-name ".venv" root)))
+  ;; Not in buffers without a file, such as org's C-c ' edit buffers: there is
+  ;; nothing for the server to read.
+  (when buffer-file-name
+    (eglot-ensure))
+  (company-mode 1))
+
+(add-hook 'python-base-mode-hook #'ewen/python-mode-setup)
 
 (use-package clang-format
   :ensure t
@@ -365,6 +387,21 @@ buffers with a live process are spared."
   (sp-pair "'" nil :actions :rem)
   ;; sp-echo-match-when-invisible may have bad performance for huge forms
   (setq sp-echo-match-when-invisible nil))
+
+;; smartparens-org pairs the emphasis markers * _ / ~ =, which inside a src
+;; block are code: `self._' became `self.__'.  Prose keeps the pairing.
+(defun ewen/sp-org-in-src-block-p (_id action _context)
+  (and (eq action 'insert) (org-in-src-block-p)))
+
+;; The whole :unless list is restated: a local pair replaces it rather than
+;; merging an (:add ...) into it.
+(with-eval-after-load 'smartparens-org
+  (dolist (pair (seq-filter (lambda (p)
+                              (member (plist-get p :open) '("*" "_" "/" "~" "=")))
+                            (cdr (assq 'org-mode sp-pairs))))
+    (sp-local-pair 'org-mode (plist-get pair :open) nil
+                   :unless (cons 'ewen/sp-org-in-src-block-p
+                                 (plist-get pair :unless)))))
 
 (add-hook 'eshell-mode-hook
           (lambda ()
@@ -944,6 +981,36 @@ With a prefix argument SUBMIT, also send RET."
     (ivy-mode 1))
 
   (use-package replique :ensure t)
+
+  ;; Jupyter kernels from org-babel: `jupyter-python' src blocks share one
+  ;; live kernel per :session and show plots inline, notebook style.  The
+  ;; kernel is picked per file with
+  ;;   #+PROPERTY: header-args:jupyter-python :kernel <name>
+  (use-package jupyter
+    :ensure t
+    :after org
+    :config
+    ;; ob-jupyter must be loaded after ob-python, hence appended.
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     (append org-babel-load-languages '((jupyter . t))))
+    (setq org-babel-default-header-args:jupyter-python
+          '((:async . "yes") (:session . "py") (:kernel . "python3")))
+    (add-hook 'org-babel-after-execute-hook #'org-link-preview-refresh)
+    ;; Org 9.8's drawer interpreter passes :pre-blank to `make-string', and
+    ;; the RESULTS drawer jupyter builds for a multi-part result -- a Python
+    ;; error is a [goto error] link plus the traceback -- has none, so every
+    ;; error signalled (wrong-type-argument wholenump nil) instead of showing.
+    (define-advice jupyter-org-results-drawer
+        (:filter-return (drawer) ewen/pre-blank)
+      (org-element-put-property drawer :pre-blank 0)
+      drawer))
+
+  ;; `# %%' cells in .py buffers, and .ipynb files opened as such through
+  ;; jupytext (which must be on PATH).
+  (use-package code-cells
+    :ensure t
+    :hook (python-base-mode . code-cells-mode-maybe))
 
   (use-package editorconfig
     :ensure t
