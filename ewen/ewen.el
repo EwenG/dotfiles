@@ -52,4 +52,12 @@ of this buffer's process, as reported by pstree(1)."
                                          (car buffer-names-candidates))))
       (rename-buffer buffer-name))))
 
+(defun ewen/git-worktrees (dir)
+  "Worktree directories of DIR's repository, or nil when DIR is not in one."
+  (let ((default-directory (file-name-as-directory (expand-file-name dir))))
+    (ignore-errors
+      (seq-keep (lambda (l)
+                  (and (string-prefix-p "worktree " l) (substring l 9)))
+                (process-lines "git" "worktree" "list" "--porcelain")))))
+
 (provide 'ewen)
