@@ -9,7 +9,7 @@
  '(ediff-split-window-function 'split-window-horizontally)
  '(ediff-window-setup-function 'ediff-setup-windows-plain)
  '(package-selected-packages
-   '(catppuccin-theme clang-format clj-data clojure-mode clojure-ts-mode code-cells
+   '(catppuccin-theme clang-format clojure-mode clojure-ts-mode code-cells
                       company counsel dape diff-hl editorconfig elisp-slime-nav
                       exec-path-from-shell ghostel gif-screencast gnuplot
                       graphql-mode ivy js2-mode jupyter less-css-mode magit

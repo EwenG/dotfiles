@@ -584,7 +584,6 @@ nothing to hold for real."
 (add-hook 'after-init-hook 'ewen-after-init-hook)
 
 (defun ewen-after-init-hook ()
-  (add-to-list 'load-path "~/clj-data.el")
   ;;(add-to-list 'load-path "~/replique.el")
   (add-to-list 'load-path "~/replique.el-2")
   (add-to-list 'load-path "~/strette.el")
