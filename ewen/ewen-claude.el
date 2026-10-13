@@ -467,31 +467,27 @@ its working directory is not something Claude can resolve."
             pos (match-end 0)))
     (make-string (max 3 (1+ longest)) ?`)))
 
-(defun ewen/claude-reference-file (&optional submit)
-  "Insert @-references to this buffer's file, or the Dired selection, into a
-Claude session.  Directories are referenced as such.
-With a prefix argument SUBMIT, also send RET.  Paths are relative to the
-session's own working directory, not to this buffer's project."
-  (interactive "P")
+(defun ewen/claude--paste (buf text submit)
+  "Paste TEXT into the Claude session BUF, then RET when SUBMIT is non-nil.
+Bracketed paste, not `ghostel-send-string': typing \"@\" character by
+character opens Claude's file picker, which then eats the path, and a typed
+newline would submit the prompt halfway through a block."
+  (with-current-buffer buf
+    (ghostel-paste-string text)
+    (when submit (ghostel-send-key "return"))))
+
+(defun ewen/claude--reference-files (submit)
+  "Paste @-references to `ewen/claude--targets' into a Claude session."
   (let* ((targets (ewen/claude--targets))
          (buf (ewen/claude--session (ewen/claude--project-dir (car targets))))
          (root (buffer-local-value 'default-directory buf))
          (refs (mapconcat (lambda (f) (ewen/claude--ref f root)) targets " ")))
-    ;; Bracketed paste, not `ghostel-send-string': typing "@" character by
-    ;; character opens Claude's file picker, which then eats the path.
-    (with-current-buffer buf
-      (ghostel-paste-string (concat refs " "))
-      (when submit (ghostel-send-key "return")))
+    (ewen/claude--paste buf (concat refs " ") submit)
     (message "%s -> %s" refs (buffer-name buf))))
 
-(defun ewen/claude-send-region (beg end &optional submit)
-  "Send the region BEG..END to a Claude session as a fenced quote.
-The block is headed with \"path:first-last\" so Claude can locate the lines.
-With a prefix argument SUBMIT, also send RET."
-  (interactive
-   (if (use-region-p)
-       (list (region-beginning) (region-end) current-prefix-arg)
-     (user-error "No active region")))
+(defun ewen/claude--send-region (beg end submit)
+  "Paste the region BEG..END into a Claude session as a fenced quote.
+The block is headed with \"path:first-last\" so Claude can locate the lines."
   (let* ((file (ewen/claude--file))
          (buf (ewen/claude--session
                (ewen/claude--project-dir (or file default-directory))))
@@ -513,12 +509,21 @@ With a prefix argument SUBMIT, also send RET."
                         header fence (ewen/claude--fence-language)
                         (replace-regexp-in-string "\n\\'" "" text)
                         fence)))
-    ;; Bracketed paste is required, not merely safer: a typed newline would
-    ;; submit the prompt instead of continuing the block.
-    (with-current-buffer buf
-      (ghostel-paste-string block)
-      (when submit (ghostel-send-key "return")))
+    (ewen/claude--paste buf block submit)
     (message "%s -> %s" header (buffer-name buf))))
+
+(defun ewen/claude-reference (&optional submit)
+  "Point a Claude session at the region, or else at this buffer's file.
+With an active region, paste it as a fenced quote headed \"path:first-last\".
+Otherwise paste @-references to the file, or to the Dired selection --
+directories referenced as such -- relative to the session's own working
+directory, not to this buffer's project.  Dired always references files: its
+region marks entries, and `dired-get-marked-files' already honours it.
+With a prefix argument SUBMIT, also send RET."
+  (interactive "P")
+  (if (and (use-region-p) (not (derived-mode-p 'dired-mode)))
+      (ewen/claude--send-region (region-beginning) (region-end) submit)
+    (ewen/claude--reference-files submit)))
 
 (provide 'ewen-claude)
 ;;; ewen-claude.el ends here

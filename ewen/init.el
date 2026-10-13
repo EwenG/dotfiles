@@ -579,11 +579,7 @@ nothing to hold for real."
 
 (require 'ewen-claude)
 
-(global-set-key (kbd "C-c @") #'ewen/claude-reference-file)
-;; Both spellings: a terminal delivers C-SPC as C-@, a GUI frame as its own
-;; event, and `kbd' does not fold the two together.
-(global-set-key (kbd "C-c C-@") #'ewen/claude-send-region)
-(global-set-key (kbd "C-c C-SPC") #'ewen/claude-send-region)
+(global-set-key (kbd "C-c @") #'ewen/claude-reference)
 
 (add-hook 'after-init-hook 'ewen-after-init-hook)
 
@@ -623,6 +619,7 @@ nothing to hold for real."
     (magit-display-buffer-function
      #'magit-display-buffer-same-window-except-diff-v1)
     (magit-ediff-dwim-show-on-hunks t)
+    (magit-section-initial-visibility-alist '((file . hide)))
     :bind (:map magit-mode-map
                 ("C-c C-k" . ewen/magit-kill-buffers)))
   ;; Git changes in the fringe.
